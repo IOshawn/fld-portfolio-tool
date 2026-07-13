@@ -1,0 +1,158 @@
+openapi: 3.0.1
+info:
+  title: Yandi Shift Decision Report
+  description: >
+    Agent tool contract for Copilot Studio. This tool returns the current
+    Yandi shift window, plant-related KPI snapshots, and decision-log entries
+    with attached non-Shift-Insights alerts.
+  version: 1.0.0
+servers:
+  - url: https://YOUR-ENDPOINT-HOST
+paths:
+  /reports/yandi/shift-decision-report:
+    post:
+      summary: Get current Yandi shift decision report
+      description: >
+        Returns shift-to-date data using database UTC time and a local shift
+        boundary calculated in UTC+8. The response is intentionally structured
+        for Copilot Studio agent use.
+      operationId: getYandiShiftDecisionReport
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                siteCode:
+                  type: string
+                  default: YAN
+                  description: Site code. This implementation is intended for Yandi.
+                utcOffsetHours:
+                  type: integer
+                  default: 8
+                  description: Local timezone offset used to derive the shift boundary.
+                maxDecisionRows:
+                  type: integer
+                  default: 50
+                  minimum: 1
+                  maximum: 200
+                  description: Maximum number of decision-log rows to return.
+              additionalProperties: false
+      responses:
+        '200':
+          description: Shift report returned successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shiftWindow:
+                    type: object
+                    properties:
+                      queryRunTimeUtc:
+                        type: string
+                        format: date-time
+                      queryRunTimeLocalUtcPlus8:
+                        type: string
+                        format: date-time
+                      shiftStartUtc:
+                        type: string
+                        format: date-time
+                      shiftStartLocalUtcPlus8:
+                        type: string
+                        format: date-time
+                  mineKpis:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        metricTimestampUtc:
+                          type: string
+                          format: date-time
+                        mineKpiId:
+                          type: integer
+                        metricName:
+                          type: string
+                        pit:
+                          type: string
+                        value:
+                          type: string
+                  plantKpis:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        metricTimestampUtc:
+                          type: string
+                          format: date-time
+                        plantKpiId:
+                          type: integer
+                        metricName:
+                          type: string
+                        plantName:
+                          type: string
+                        value:
+                          type: string
+                  decisionLogs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        decisionId:
+                          type: integer
+                        decisionTimestampUtc:
+                          type: string
+                          format: date-time
+                        changeLoggedBy:
+                          type: string
+                        pit:
+                          type: string
+                        equipmentName:
+                          type: string
+                        equipmentType:
+                          type: string
+                        metric:
+                          type: string
+                        logType:
+                          type: string
+                        logDetail:
+                          type: string
+                        logSubDetail:
+                          type: string
+                        comments:
+                          type: string
+                        roleId:
+                          type: integer
+                        isHandover:
+                          type: boolean
+                        isOngoing:
+                          type: boolean
+                        decisionLogPageId:
+                          type: integer
+                        attachedAlert:
+                          nullable: true
+                          type: object
+                          properties:
+                            alertId:
+                              type: integer
+                            alertType:
+                              type: integer
+                            alertTypeTitle:
+                              type: string
+                            alertTitle:
+                              type: string
+                            alertUnit:
+                              type: string
+                            alertTimestampUtc:
+                              type: string
+                              format: date-time
+                required:
+                  - shiftWindow
+                  - mineKpis
+                  - plantKpis
+                  - decisionLogs
+        '400':
+          description: Invalid request.
+        '500':
+          description: Backend execution failed.
