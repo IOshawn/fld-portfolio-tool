@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en-AU" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Frontline Digital Portfolio Intelligence Hub - clickable prototype">
+<title>Frontline Digital · Portfolio Hub (prototype)</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-3: #eef0f3;
+  --stroke: #e3e5e9;
+  --stroke-2: #eceef1;
+  --text: #1f2329;
+  --text-2: #4a4f57;
+  --text-3: #767b84;
+  --brand: #0f6cbd;
+  --brand-2: #eaf2fb;
+  --brand-ink: #0b5394;
+  --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 2px 8px rgba(20, 30, 50, .05);
+  --shadow-lg: 0 6px 20px rgba(20, 30, 50, .12);
+  --radius: 12px;
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  /* Demo is designed light; provide a graceful dark fallback for dark-OS viewers. */
+  :root {
+    --bg: #1b1d21; --surface: #24272c; --surface-2: #2a2e34; --surface-3: #30343b;
+    --stroke: #3a3f47; --stroke-2: #343941; --text: #f2f3f5; --text-2: #c8ccd2;
+    --text-3: #9aa0a8; --brand-2: #1e3a52;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.45;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+/* ----- App shell ----- */
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.aside {
+  background: var(--surface); border-inline-end: 1px solid var(--stroke);
+  position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
+}
+.brand { padding: 20px 20px 16px; border-bottom: 1px solid var(--stroke); display: flex; gap: 10px; align-items: center; }
+.brand-mark {
+  width: 32px; height: 32px; border-radius: 8px; background: var(--brand); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.brand-title { font-weight: 600; font-size: 14px; }
+.brand-sub { font-size: 12px; color: var(--text-3); }
+.nav { padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px;
+  color: var(--text-2); font-weight: 500; cursor: pointer; white-space: nowrap;
+}
+.nav-item:hover { background: var(--surface-3); color: var(--text); }
+.nav-item.active { background: var(--brand-2); color: var(--brand-ink); font-weight: 600; }
+.nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+.aside-foot { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--stroke); }
+.pill-demo { display: inline-block; font-size: 12px; color: var(--brand-ink); background: var(--brand-2); padding: 3px 10px; border-radius: 999px; }
+
+.main { min-width: 0; overflow: auto; }
+.content { max-width: 1240px; margin: 0 auto; padding: 28px 32px 64px; }
+
+/* ----- Page header ----- */
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--brand-ink); }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.page-title { font-size: 28px; font-weight: 700; line-height: 1.1; margin: 4px 0 2px; }
+.page-sub { color: var(--text-3); }
+.rule { height: 1px; background: var(--stroke); margin: 16px 0 24px; }
+.head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ----- Buttons ----- */
+.btn {
+  border: 1px solid var(--stroke); background: var(--surface); color: var(--text);
+  padding: 7px 14px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { background: #0c5aa0; }
+.btn.subtle { border-color: transparent; background: transparent; color: var(--brand-ink); padding: 4px 8px; }
+.btn.sm { padding: 4px 10px; font-size: 13px; }
+
+/* ----- Cards / surfaces ----- */
+.surface { background: var(--surface); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); }
+.section { display: flex; flex-direction: column; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--stroke); }
+.section-head .st { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 15px; }
+.section-head svg { width: 18px; height: 18px; color: var(--brand-ink); }
+.section-body { padding: 10px 18px 16px; }
+.section-body.flush { padding: 0; }
+
+.grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.stat { padding: 16px 18px; }
+.stat .accent { height: 3px; width: 36px; border-radius: 3px; margin-bottom: 10px; }
+.stat .val { font-size: 32px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat .lab { color: var(--text-3); margin-top: 4px; }
+.stat .hint { color: var(--text-3); font-size: 12px; }
+
+/* ----- Badges / chips ----- */
+.badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge.outline { background: transparent; border: 1px solid var(--stroke); color: var(--text-2); }
+.badge.tint { background: var(--brand-2); color: var(--brand-ink); }
+.chip { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; }
+.chip.sm { height: 19px; padding: 0 6px; border-radius: 5px; font-size: 11px; }
+
+/* ----- Lists ----- */
+.row { display: flex; align-items: center; gap: 12px; padding: 11px 4px; border-bottom: 1px solid var(--stroke-2); }
+.row:last-child { border-bottom: 0; }
+.row:hover { background: var(--surface-2); }
+.row.click { cursor: pointer; }
+.row .ico { width: 30px; height: 30px; border-radius: 8px; background: var(--surface-3); color: var(--text-3); display: grid; place-items: center; flex-shrink: 0; }
+.row .ico svg { width: 16px; height: 16px; }
+.row .bd { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.row .pri { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .sec { color: var(--text-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .rt { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.row .dt { font-variant-numeric: tabular-nums; color: var(--text-2); font-size: 13px; white-space: nowrap; }
+.muted { color: var(--text-3); padding: 12px 4px; }
+.bodypad { padding: 0 20px 8px; }
+
+/* ----- Bars ----- */
+.bars { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
+.bar-row { display: grid; grid-template-columns: 120px 1fr 28px; align-items: center; gap: 12px; }
+.bar-lab { color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { height: 10px; background: var(--surface-3); border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; min-width: 2px; }
+.bar-num { text-align: end; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* ----- Filters ----- */
+.filters { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--text-2); }
+.field select, .field input, .form input, .form select, .form textarea {
+  font-family: inherit; font-size: 14px; padding: 7px 10px; border: 1px solid var(--stroke); border-radius: 6px;
+  background: var(--surface); color: var(--text); min-width: 150px;
+}
+.field input { min-width: 220px; }
+.count { color: var(--text-3); font-size: 13px; padding-bottom: 6px; }
+.spacer { flex: 1; }
+
+/* ----- Roadmap timeline ----- */
+.tl-scroll { overflow: auto; }
+.tl { min-width: 960px; }
+.tl-head { display: grid; grid-template-columns: 184px 1fr; position: sticky; top: 0; z-index: 3; background: var(--surface); border-bottom: 1px solid var(--stroke); }
+.tl-head .lab { position: sticky; inset-inline-start: 0; z-index: 4; background: var(--surface); padding: 12px 16px; border-inline-end: 1px solid var(--stroke); color: var(--text-3); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; display: flex; align-items: flex-end; }
+.tl-years { display: flex; }
+.tl-year { flex: 1; border-inline-end: 1px solid var(--stroke); }
+.tl-year:last-child { border-inline-end: 0; }
+.tl-year .y { padding: 8px 12px 4px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tl-qs { display: flex; }
+.tl-q { flex: 1; padding: 0 0 6px 12px; color: var(--text-3); font-size: 11px; }
+.tl-row { display: grid; grid-template-columns: 184px 1fr; }
+.tl-row:hover { background: var(--surface-2); }
+.tl-row .lab { position: sticky; inset-inline-start: 0; z-index: 2; background: var(--surface); padding: 0 16px; border-inline-end: 1px solid var(--stroke); border-bottom: 1px solid var(--stroke-2); display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.tl-row .lab .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-row .lab .s { color: var(--text-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-track { position: relative; height: 48px; border-bottom: 1px solid var(--stroke-2);
+  background-image: repeating-linear-gradient(to right, var(--stroke-2) 0 1px, transparent 1px calc(100%/12)), repeating-linear-gradient(to right, var(--stroke) 0 1px, transparent 1px calc(100%/3)); }
+.tl-bar { position: absolute; top: 11px; height: 26px; border-radius: 6px; display: flex; align-items: center; padding: 0 8px; overflow: hidden; color: #fff; box-shadow: var(--shadow); cursor: pointer; }
+.tl-bar:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.tl-bar span { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--brand); z-index: 1; }
+.legend { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 14px; color: var(--text-3); }
+.legend .it { display: flex; align-items: center; gap: 6px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+
+/* ----- Project cards ----- */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+.pcard { padding: 16px 18px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; }
+.pcard:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.pcard .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.pcard .nm { font-weight: 600; font-size: 15px; line-height: 1.2; }
+.pcard .cd { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pcard .ch { display: flex; gap: 8px; flex-wrap: wrap; }
+.pcard .ow { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; }
+.pcard .nx { display: flex; gap: 8px; align-items: center; padding-top: 10px; border-top: 1px solid var(--stroke-2); color: var(--text-3); font-size: 12px; }
+.avatar { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+/* ----- Tabs ----- */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--stroke); margin-bottom: 16px; }
+.tab { padding: 9px 14px; cursor: pointer; font-weight: 600; color: var(--text-3); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--brand-ink); border-bottom-color: var(--brand); }
+
+/* ----- Detail ----- */
+.back { display: inline-flex; align-items: center; gap: 4px; color: var(--text-3); margin-bottom: 12px; cursor: pointer; }
+.back:hover { color: var(--text); }
+.callout { padding: 12px 14px; border-radius: 8px; background: var(--surface-2); border-inline-start: 3px solid var(--brand); margin-bottom: 12px; }
+.callout.value { border-inline-start-color: #2f9e8f; }
+.callout .k { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-top: 14px; }
+.fact .k { color: var(--text-3); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.fact .v { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.dep { margin-top: 16px; }
+.dep .k { color: var(--text-3); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.progress { height: 10px; background: var(--surface-3); border-radius: 6px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--brand); }
+
+/* ----- Matrix / heatmap ----- */
+.mx-scroll { overflow: auto; }
+.mx { display: grid; min-width: 880px; grid-template-columns: 184px repeat(12, minmax(62px, 1fr)); }
+.mx .corner { position: sticky; top: 0; inset-inline-start: 0; z-index: 5; background: var(--surface); border-inline-end: 1px solid var(--stroke); border-bottom: 1px solid var(--stroke); padding: 10px 12px; color: var(--text-3); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; display: flex; align-items: flex-end; }
+.mx .ch { position: sticky; top: 0; z-index: 3; background: var(--surface); border-bottom: 1px solid var(--stroke); border-inline-end: 1px solid var(--stroke-2); padding: 8px 6px; text-align: center; font-weight: 600; font-size: 12px; cursor: pointer; }
+.mx .ch:hover { background: var(--surface-2); }
+.mx .rh { position: sticky; inset-inline-start: 0; z-index: 2; background: var(--surface); border-inline-end: 1px solid var(--stroke); border-bottom: 1px solid var(--stroke-2); padding: 8px 12px; font-weight: 600; font-size: 13px; display: flex; align-items: center; }
+.mx .cell { border-inline-end: 1px solid var(--stroke-2); border-bottom: 1px solid var(--stroke-2); padding: 5px; min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 3px; }
+.mx .cell a { cursor: pointer; }
+.mx .hcell { border-inline-end: 1px solid var(--stroke-2); border-bottom: 1px solid var(--stroke-2); min-height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13px; cursor: pointer; }
+.mx .hcell.sel { outline: 2px solid var(--brand); outline-offset: -2px; }
+.drill { margin-top: 16px; padding: 16px 18px; }
+.tip { color: var(--text-3); font-size: 13px; margin-top: 12px; }
+
+/* ----- Site view ----- */
+.grid-site { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 880px) { .grid-site { grid-template-columns: 1fr; } }
+.site-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 0; background: transparent; color: var(--text); cursor: pointer; text-align: start; width: 100%; }
+.site-btn:hover { background: var(--surface-3); }
+.site-btn.active { background: var(--brand-2); color: var(--brand-ink); }
+.site-btn .nm { font-weight: 600; }
+.site-btn .sub { font-size: 11px; color: var(--text-3); }
+.site-pill { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-3); background: var(--surface-3); padding: 1px 8px; border-radius: 10px; flex-shrink: 0; }
+
+/* ----- Forms ----- */
+.form { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+.form .field { gap: 5px; }
+.form .field label { color: var(--text-2); }
+.form textarea { min-height: 70px; resize: vertical; width: 100%; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+.success { display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; border-radius: 10px; background: #e7f5ea; border: 1px solid #a7d8b3; }
+.success svg { color: #0e700e; flex-shrink: 0; }
+
+.print-note { display: none; }
+@media print { .aside { display: none; } .app { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="aside">
+    <div class="brand">
+      <span class="brand-mark">FD</span>
+      <div><div class="brand-title">Frontline Digital</div><div class="brand-sub">Portfolio Hub</div></div>
+    </div>
+    <nav class="nav" aria-label="Primary"><div class="nav-item" data-act="nav" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5M6 10.5V19h12v-8.5"/></svg><span>Home</span></div><div class="nav-item" data-act="nav" data-view="roadmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="10" cy="17" r="1.4"/></svg><span>Portfolio Roadmap</span></div><div class="nav-item" data-act="nav" data-view="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.2"/><rect x="13" y="4" width="7" height="7" rx="1.2"/><rect x="4" y="13" width="7" height="7" rx="1.2"/><rect x="13" y="13" width="7" height="7" rx="1.2"/></svg><span>Projects</span></div><div class="nav-item" data-act="nav" data-view="engagements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M7.6 7.4 10.6 16M16.4 7.4 13.4 16M8 6h8"/></svg><span>Engagements</span></div><div class="nav-item" data-act="nav" data-view="sites"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10Z"/><circle cx="12" cy="11" r="2.2"/></svg><span>Sites</span></div><div class="nav-item" data-act="nav" data-view="updates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19h14M7 15.5 16 6.5l2 2-9 9-2.6.6.6-2.6Z"/></svg><span>Updates</span></div></nav>
+    <div class="aside-foot"><span class="pill-demo">Prototype · Mock data</span></div>
+  </aside>
+  <main class="main"><div class="content" id="view"></div></main>
+</div>
+<script>
+const DATA = {"projects": [{"id": "trueview", "title": "TrueView", "abbrev": "TV", "portfolio": "Asset Health", "productArea": "Predictive Maintenance", "owner": "Phillip Rickson", "sponsor": "Hayley Mitchell", "stage": "Scale", "status": "Green", "startDate": "2026-01-12", "endDate": "2027-06-30", "summary": "Real-time condition monitoring for conveyors and fixed plant, streaming sensor data into a single health view for reliability crews.", "outcomeStatement": "Reduce unplanned fixed-plant downtime by detecting degradation before failure.", "businessValue": "Less unplanned downtime and longer asset life through earlier intervention.", "dependencies": ["Control Room Digital"], "fundingSource": "OPEX - Asset Health", "projectCode": "FD-AH-014", "lastUpdate": "Scaled to three processing hubs; sensor coverage now at 78%.", "lastUpdated": "2026-06-15"}, {"id": "hydrohaul", "title": "HydroHaul", "abbrev": "HH", "portfolio": "Water", "productArea": "Haulage & Dewatering", "owner": "Brett Riley", "sponsor": "David Nguyen", "stage": "Build", "status": "Amber", "startDate": "2026-02-02", "endDate": "2027-11-30", "summary": "Optimises mine dewatering and water-cart haulage scheduling using live pit and weather signals.", "outcomeStatement": "Cut water-cart fuel burn and dust exceedances across active pits.", "businessValue": "Lower water-cart fuel and dust exceedances, with better water reuse.", "dependencies": ["Control Room Digital"], "fundingSource": "CAPEX - Water", "projectCode": "FD-WA-021", "lastUpdate": "Fleet telemetry integration behind schedule; vendor API delayed to July.", "lastUpdated": "2026-06-09"}, {"id": "cadence", "title": "Integrated Cadence Tool", "abbrev": "ICT", "portfolio": "Planning & Scheduling", "productArea": "Short Interval Control", "owner": "Kayne Ryan", "sponsor": "Sarah Whitfield", "stage": "Pilot", "status": "Green", "startDate": "2026-03-01", "endDate": "2027-03-31", "summary": "Aligns short-interval-control cadence across mining and processing so crews plan to a common rhythm.", "outcomeStatement": "Standardise SIC cadence and lift plan adherence across operations.", "businessValue": "Higher plan adherence and a common operating rhythm across mining and processing.", "dependencies": ["Daily Performance Insights"], "fundingSource": "OPEX - Planning", "projectCode": "FD-PL-008", "lastUpdate": "Prototyping with OE/BI at Greater Tom Price and Hope Downs 1; engaged at West Angelas.", "lastUpdated": "2026-06-18"}, {"id": "frontline-ai", "title": "Frontline AI Insights", "abbrev": "FAI", "portfolio": "Frontline Analytics", "productArea": "Generative AI", "owner": "Stephen Mackinlay", "sponsor": "Priya Iyer", "stage": "Discovery", "status": "Green", "startDate": "2026-04-15", "endDate": "2027-09-30", "summary": "Surfaces operational insights to frontline supervisors through natural-language questions over operational data.", "outcomeStatement": "Help supervisors make faster, better-informed shift decisions.", "businessValue": "Faster supervisor decisions from natural-language access to operational data.", "dependencies": ["Daily Performance Insights", "Control Room Digital"], "fundingSource": "OPEX - Innovation", "projectCode": "FD-FA-002", "lastUpdate": "Discovery interviews complete; four candidate use cases prioritised.", "lastUpdated": "2026-06-20"}, {"id": "digby", "title": "DIGBY", "abbrev": "DGB", "portfolio": "Control Room", "productArea": "Process Automation", "owner": "Paulo Martins", "sponsor": "Marcus Tan", "stage": "Design", "status": "Amber", "startDate": "2026-01-26", "endDate": "2028-02-29", "summary": "Digital control-room assistant for load-out and train scheduling, guiding operators through standard responses.", "outcomeStatement": "Reduce manual control-room interventions during load-out.", "businessValue": "Fewer manual control-room interventions and more consistent load-out.", "dependencies": ["Control Room Digital"], "fundingSource": "CAPEX - Control Room", "projectCode": "FD-CR-011", "lastUpdate": "Design review flagged scope risk on the train-ordering integration.", "lastUpdated": "2026-06-11"}, {"id": "rsm-work-mgmt", "title": "RSM Work Management", "abbrev": "RSM", "portfolio": "Maintenance Excellence", "productArea": "Work Management", "owner": "Mark Playle", "sponsor": "James O'Sullivan", "stage": "Build", "status": "Red", "startDate": "2025-09-01", "endDate": "2027-04-30", "summary": "Rolls out the reliability and shutdown maintenance work-management standard with supporting tooling.", "outcomeStatement": "Improve maintenance schedule compliance across sites.", "businessValue": "Better maintenance schedule compliance and reliability outcomes.", "dependencies": ["Digital Work Management"], "fundingSource": "CAPEX - Maintenance", "projectCode": "FD-MN-004", "lastUpdate": "Two key vendor resources rolled off; build milestone slipped six weeks.", "lastUpdated": "2026-06-05"}, {"id": "paperless-maintainer", "title": "Paperless Maintainer", "abbrev": "PM", "portfolio": "Maintenance Excellence", "productArea": "Mobility", "owner": "Mark Playle", "sponsor": "James O'Sullivan", "stage": "Pilot", "status": "Green", "startDate": "2026-02-16", "endDate": "2027-02-28", "summary": "Replaces paper maintenance checksheets with mobile forms used at the workface.", "outcomeStatement": "Eliminate paper checksheets and capture maintenance data at source.", "businessValue": "No paper at the workface and maintenance data captured at source.", "dependencies": ["Digital Work Management"], "fundingSource": "OPEX - Maintenance", "projectCode": "FD-MN-009", "lastUpdate": "Pilot running at West Angelas; 1,283 paper forms retired so far.", "lastUpdated": "2026-06-17"}, {"id": "shift-handover", "title": "Digital Shift Handover", "abbrev": "SH", "portfolio": "Workforce", "productArea": "Shift Operations", "owner": "Kelvin Chew", "sponsor": "Hayley Mitchell", "stage": "Scale", "status": "Green", "startDate": "2025-11-03", "endDate": "2027-07-31", "summary": "Structured digital shift handover that carries open actions and risks across crews.", "outcomeStatement": "Reduce information loss between shifts and crews.", "businessValue": "Less information lost between shifts and safer, smoother crew transitions.", "dependencies": [], "fundingSource": "OPEX - Workforce", "projectCode": "FD-WF-006", "lastUpdate": "Engaged and piloting across seven sites; OE/BI, Production and Development progressing.", "lastUpdated": "2026-06-19"}, {"id": "safety-intel", "title": "Integrated Safety Intelligence", "abbrev": "ISI", "portfolio": "Safety & Risk", "productArea": "Safety Analytics", "owner": "Ramon Cliquet de Oliveira", "sponsor": "Priya Iyer", "stage": "Build", "status": "Amber", "startDate": "2026-03-09", "endDate": "2028-01-31", "summary": "Consolidates safety signals from multiple systems into a single, ranked risk view.", "outcomeStatement": "Detect high-potential risk earlier across the operation.", "businessValue": "Earlier detection of high-potential risk from consolidated safety signals.", "dependencies": ["E-Permitting"], "fundingSource": "CAPEX - HSEC", "projectCode": "FD-SR-003", "lastUpdate": "Core data model built; two of five source systems integrated.", "lastUpdated": "2026-06-13"}, {"id": "control-room-digital", "title": "Control Room Digital", "abbrev": "CRD", "portfolio": "Control Room", "productArea": "Platform", "owner": "Paulo Martins", "sponsor": "Marcus Tan", "stage": "Sustain", "status": "Green", "startDate": "2025-07-01", "endDate": "2028-06-30", "summary": "Ongoing modernisation and support of the control-room digital platform underpinning other initiatives.", "outcomeStatement": "Maintain a stable, supported control-room toolset for operations.", "businessValue": "A stable, supported control-room platform underpinning other initiatives.", "dependencies": [], "fundingSource": "OPEX - Control Room", "projectCode": "FD-CR-001", "lastUpdate": "Quarterly platform patching complete; platform uptime 99.4%.", "lastUpdated": "2026-06-16"}, {"id": "dpi", "title": "Daily Performance Insights", "abbrev": "DPI", "portfolio": "Frontline Analytics", "productArea": "Performance Analytics", "owner": "Stephen Mackinlay", "sponsor": "Priya Iyer", "stage": "Pilot", "status": "Green", "startDate": "2026-01-19", "endDate": "2027-12-31", "summary": "Surfaces daily production and performance insights to frontline crews and supervisors across mining work areas.", "outcomeStatement": "Lift daily performance conversations with shared, trusted numbers.", "businessValue": "Faster, data-led shift reviews and earlier correction of performance gaps across multiple sites.", "dependencies": ["Control Room Digital", "Integrated Cadence Tool"], "fundingSource": "OPEX - Innovation", "projectCode": "FD-FA-005", "lastUpdate": "Piloting across Production, Drill & Blast and Development at five sites; engaged at Gudai-Darri.", "lastUpdated": "2026-06-21"}, {"id": "dwm", "title": "Digital Work Management", "abbrev": "DWM", "portfolio": "Maintenance Excellence", "productArea": "Work Management", "owner": "Mark Playle", "sponsor": "James O'Sullivan", "stage": "Design", "status": "Amber", "startDate": "2026-04-06", "endDate": "2028-03-31", "summary": "Digitises maintenance and operational work management, replacing spreadsheets and paper routines.", "outcomeStatement": "A single digital flow for planning, scheduling and closing out work.", "businessValue": "Improved schedule compliance and visibility of work status across sites.", "dependencies": ["RSM Work Management", "Paperless Maintainer"], "fundingSource": "CAPEX - Maintenance", "projectCode": "FD-MN-012", "lastUpdate": "Design under way with OE/BI and Production at Hope Downs 1.", "lastUpdated": "2026-06-10"}, {"id": "epermitting", "title": "E-Permitting", "abbrev": "EPER", "portfolio": "Safety & Risk", "productArea": "Permit to Work", "owner": "Ramon Cliquet de Oliveira", "sponsor": "Priya Iyer", "stage": "Discovery", "status": "Green", "startDate": "2026-05-25", "endDate": "2028-06-30", "summary": "Replaces paper permits to work with a digital permitting workflow for high-risk work.", "outcomeStatement": "Safer, faster, auditable permit-to-work across the operation.", "businessValue": "Reduced permit errors and a clear audit trail for high-risk work.", "dependencies": ["Integrated Safety Intelligence"], "fundingSource": "CAPEX - HSEC", "projectCode": "FD-SR-007", "lastUpdate": "Discovery started with HSEC and OE/BI; scoping first sites.", "lastUpdated": "2026-06-23"}], "milestones": [{"id": "m-tv-1", "projectId": "trueview", "name": "Sensor coverage 50%", "date": "2026-04-30", "status": "Complete", "notes": "Conveyor drives and gearboxes instrumented at first hub."}, {"id": "m-tv-2", "projectId": "trueview", "name": "Health view live for reliability crews", "date": "2026-08-14", "status": "On Track", "notes": "Single condition view replacing three spreadsheets."}, {"id": "m-tv-3", "projectId": "trueview", "name": "Full processing rollout", "date": "2027-03-31", "status": "Planned", "notes": "All four processing hubs covered."}, {"id": "m-hh-1", "projectId": "hydrohaul", "name": "Dewatering model validated", "date": "2026-05-22", "status": "Complete", "notes": "Pit dewatering forecast accepted by hydrogeology."}, {"id": "m-hh-2", "projectId": "hydrohaul", "name": "Fleet telemetry integration", "date": "2026-07-15", "status": "At Risk", "notes": "Blocked on vendor API; revised date under review."}, {"id": "m-hh-3", "projectId": "hydrohaul", "name": "Haulage scheduler beta", "date": "2026-11-20", "status": "Planned", "notes": "First scheduling run for water carts."}, {"id": "m-ic-1", "projectId": "cadence", "name": "Paraburdoo pilot start", "date": "2026-05-04", "status": "Complete", "notes": "Cadence boards live for two crews."}, {"id": "m-ic-2", "projectId": "cadence", "name": "Adherence review gate", "date": "2026-07-31", "status": "On Track", "notes": "Decision gate on wider rollout."}, {"id": "m-ic-3", "projectId": "cadence", "name": "Second site onboarding", "date": "2026-10-12", "status": "Planned", "notes": "Tom Price targeted for next wave."}, {"id": "m-fa-1", "projectId": "frontline-ai", "name": "Use-case shortlist signed off", "date": "2026-07-04", "status": "On Track", "notes": "Four use cases prioritised with supervisors."}, {"id": "m-fa-2", "projectId": "frontline-ai", "name": "Prototype demo", "date": "2026-09-30", "status": "Planned", "notes": "Natural-language insight demo for steering group."}, {"id": "m-db-1", "projectId": "digby", "name": "Design baseline", "date": "2026-06-30", "status": "At Risk", "notes": "Train-ordering scope risk to be resolved before sign-off."}, {"id": "m-db-2", "projectId": "digby", "name": "Build start", "date": "2026-09-07", "status": "Planned", "notes": "Dependent on design baseline."}, {"id": "m-db-3", "projectId": "digby", "name": "Load-out assist pilot", "date": "2027-06-15", "status": "Planned", "notes": "First operator-assist pilot."}, {"id": "m-rsm-1", "projectId": "rsm-work-mgmt", "name": "Standard published", "date": "2026-01-30", "status": "Complete", "notes": "Work-management standard endorsed."}, {"id": "m-rsm-2", "projectId": "rsm-work-mgmt", "name": "Tooling build complete", "date": "2026-06-30", "status": "Delayed", "notes": "Slipped six weeks after resource loss."}, {"id": "m-rsm-3", "projectId": "rsm-work-mgmt", "name": "First site go-live", "date": "2026-10-26", "status": "At Risk", "notes": "Dependent on recovered build milestone."}, {"id": "m-pm-1", "projectId": "paperless-maintainer", "name": "West Angelas pilot live", "date": "2026-05-12", "status": "Complete", "notes": "Mobile forms in use at the workface."}, {"id": "m-pm-2", "projectId": "paperless-maintainer", "name": "Pilot evaluation", "date": "2026-08-28", "status": "On Track", "notes": "Decision on multi-site rollout."}, {"id": "m-pm-3", "projectId": "paperless-maintainer", "name": "Second site go-live", "date": "2026-12-07", "status": "Planned", "notes": "Brockman 4 targeted."}, {"id": "m-sh-1", "projectId": "shift-handover", "name": "Six crews onboarded", "date": "2026-03-20", "status": "Complete", "notes": "Handover live across processing crews."}, {"id": "m-sh-2", "projectId": "shift-handover", "name": "Adoption 80%", "date": "2026-07-18", "status": "On Track", "notes": "Tracking ahead of adoption target."}, {"id": "m-sh-3", "projectId": "shift-handover", "name": "Mining crews rollout", "date": "2026-11-30", "status": "Planned", "notes": "Extend to mining operations."}, {"id": "m-si-1", "projectId": "safety-intel", "name": "Data model complete", "date": "2026-05-30", "status": "Complete", "notes": "Unified safety risk model agreed."}, {"id": "m-si-2", "projectId": "safety-intel", "name": "Three sources integrated", "date": "2026-08-09", "status": "At Risk", "notes": "Two of five integrated; HSEC source pending access."}, {"id": "m-si-3", "projectId": "safety-intel", "name": "Ranked risk view beta", "date": "2027-02-26", "status": "Planned", "notes": "First ranked view for HSEC leads."}, {"id": "m-crd-1", "projectId": "control-room-digital", "name": "Q2 platform patching", "date": "2026-06-16", "status": "Complete", "notes": "Quarterly patch cycle complete."}, {"id": "m-crd-2", "projectId": "control-room-digital", "name": "Q3 platform patching", "date": "2026-09-15", "status": "Planned", "notes": "Next quarterly cycle."}, {"id": "m-crd-3", "projectId": "control-room-digital", "name": "Resilience uplift", "date": "2027-01-29", "status": "Planned", "notes": "Failover hardening for load-out systems."}, {"id": "m-dpi-1", "projectId": "dpi", "name": "Production pilot live (5 sites)", "date": "2026-05-15", "status": "Complete", "notes": "Daily insights in use by Production crews."}, {"id": "m-dpi-2", "projectId": "dpi", "name": "Drill & Blast pilot review", "date": "2026-08-07", "status": "On Track", "notes": "Decision gate on wider Drill & Blast rollout."}, {"id": "m-dpi-3", "projectId": "dpi", "name": "Scale decision", "date": "2026-11-19", "status": "Planned", "notes": "Move from pilot to scale across mining work areas."}, {"id": "m-dwm-1", "projectId": "dwm", "name": "Design baseline (Hope Downs 1)", "date": "2026-07-24", "status": "On Track", "notes": "OE/BI and Production design sign-off."}, {"id": "m-dwm-2", "projectId": "dwm", "name": "Build start", "date": "2026-10-05", "status": "Planned", "notes": "Dependent on design baseline."}, {"id": "m-eper-1", "projectId": "epermitting", "name": "Discovery complete", "date": "2026-08-31", "status": "On Track", "notes": "Permit-to-work pain points and first sites scoped."}, {"id": "m-eper-2", "projectId": "epermitting", "name": "Design start", "date": "2026-10-19", "status": "Planned", "notes": "Digital permit workflow design."}], "engagements": [{"id": "g-001", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "MDO", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Digital Shift Handover live and embedded with OE/BI at MDO.", "notes": ""}, {"id": "g-002", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GTP", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Digital Shift Handover live and embedded with OE/BI at GTP.", "notes": ""}, {"id": "g-003", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "BM4", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Digital Shift Handover live and embedded with OE/BI at BM4.", "notes": ""}, {"id": "g-004", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "MDO", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Digital Shift Handover with Production at MDO.", "notes": ""}, {"id": "g-005", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "WAN", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-10-28", "purpose": "Pilot Digital Shift Handover with Production at WAN.", "notes": ""}, {"id": "g-006", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "YAN", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Digital Shift Handover with Production at YAN.", "notes": ""}, {"id": "g-007", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GDI", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Digital Shift Handover with Production at GDI.", "notes": ""}, {"id": "g-008", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GTP", "workArea": "Production", "team": "Production Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-09-01", "endDate": "2026-11-28", "purpose": "Prepare Production at GTP for Digital Shift Handover go-live.", "notes": ""}, {"id": "g-009", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "BM4", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Digital Shift Handover with Production at BM4.", "notes": ""}, {"id": "g-010", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "WAN", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-08-01", "endDate": "2026-10-28", "purpose": "Prepare Drill & Blast at WAN for Digital Shift Handover go-live.", "notes": ""}, {"id": "g-011", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "YAN", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-09-01", "endDate": "2026-11-28", "purpose": "Prepare Drill & Blast at YAN for Digital Shift Handover go-live.", "notes": ""}, {"id": "g-012", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GDI", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-07-01", "endDate": "2026-09-28", "purpose": "Prepare Drill & Blast at GDI for Digital Shift Handover go-live.", "notes": ""}, {"id": "g-013", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GTP", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-08-01", "endDate": "2026-10-28", "purpose": "Prepare Drill & Blast at GTP for Digital Shift Handover go-live.", "notes": ""}, {"id": "g-014", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "BM4", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-09-01", "endDate": "2026-11-28", "purpose": "Prepare Drill & Blast at BM4 for Digital Shift Handover go-live.", "notes": ""}, {"id": "g-015", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "MDO", "workArea": "Development", "team": "Development Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Digital Shift Handover live and embedded with Development at MDO.", "notes": ""}, {"id": "g-016", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "WAN", "workArea": "Development", "team": "Development Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Digital Shift Handover live and embedded with Development at WAN.", "notes": ""}, {"id": "g-017", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GTP", "workArea": "Development", "team": "Development Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Digital Shift Handover live and embedded with Development at GTP.", "notes": ""}, {"id": "g-018", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "BM4", "workArea": "Development", "team": "Development Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Digital Shift Handover live and embedded with Development at BM4.", "notes": ""}, {"id": "g-019", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GDI", "workArea": "Mine Water Management", "team": "Mine Water Management Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Digital Shift Handover live and embedded with Mine Water Management at GDI.", "notes": ""}, {"id": "g-020", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "BM4", "workArea": "Mine Water Management", "team": "Mine Water Management Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Digital Shift Handover live and embedded with Mine Water Management at BM4.", "notes": ""}, {"id": "g-021", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "HD4", "workArea": "Mine Water Management", "team": "Mine Water Management Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Digital Shift Handover live and embedded with Mine Water Management at HD4.", "notes": ""}, {"id": "g-022", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "WAN", "workArea": "MEM", "team": "MEM Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Digital Shift Handover live and embedded with MEM at WAN.", "notes": ""}, {"id": "g-023", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "GDI", "workArea": "MEM", "team": "MEM Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Digital Shift Handover live and embedded with MEM at GDI.", "notes": ""}, {"id": "g-024", "initiativeId": "shift-handover", "portfolio": "Workforce", "site": "BM4", "workArea": "MEM", "team": "MEM Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Digital Shift Handover live and embedded with MEM at BM4.", "notes": ""}, {"id": "g-025", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "WAN", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Integrated Cadence Tool live and embedded with OE/BI at WAN.", "notes": ""}, {"id": "g-026", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "GTP", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Prototype", "status": "Planned", "startDate": "2026-08-01", "endDate": "2026-10-28", "purpose": "Prototype Integrated Cadence Tool with OE/BI at GTP.", "notes": ""}, {"id": "g-027", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "HD1", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Prototype", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-08-28", "purpose": "Prototype Integrated Cadence Tool with OE/BI at HD1.", "notes": ""}, {"id": "g-028", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "PMO Control", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Integrated Cadence Tool live and embedded with OE/BI at PMO Control.", "notes": ""}, {"id": "g-029", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "HD1", "workArea": "Production", "team": "Production Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Integrated Cadence Tool live and embedded with Production at HD1.", "notes": ""}, {"id": "g-030", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "HD1", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Integrated Cadence Tool live and embedded with Drill & Blast at HD1.", "notes": ""}, {"id": "g-031", "initiativeId": "cadence", "portfolio": "Planning & Scheduling", "site": "GTP", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Integrated Cadence Tool live and embedded with Fixed Plant at GTP.", "notes": ""}, {"id": "g-032", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "PBO", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Daily Performance Insights live and embedded with OE/BI at PBO.", "notes": ""}, {"id": "g-033", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "MDO", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Daily Performance Insights with Production at MDO.", "notes": ""}, {"id": "g-034", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "WAN", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Daily Performance Insights with Production at WAN.", "notes": ""}, {"id": "g-035", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "YAN", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-10-28", "purpose": "Pilot Daily Performance Insights with Production at YAN.", "notes": ""}, {"id": "g-036", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "GDI", "workArea": "Production", "team": "Production Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Daily Performance Insights live and embedded with Production at GDI.", "notes": ""}, {"id": "g-037", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "GTP", "workArea": "Production", "team": "Production Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Daily Performance Insights live and embedded with Production at GTP.", "notes": ""}, {"id": "g-038", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "BM4", "workArea": "Production", "team": "Production Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Daily Performance Insights live and embedded with Production at BM4.", "notes": ""}, {"id": "g-039", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "PBO", "workArea": "Production", "team": "Production Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Daily Performance Insights with Production at PBO.", "notes": ""}, {"id": "g-040", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "MDO", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Daily Performance Insights with Drill & Blast at MDO.", "notes": ""}, {"id": "g-041", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "WAN", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Pilot", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-10-28", "purpose": "Pilot Daily Performance Insights with Drill & Blast at WAN.", "notes": ""}, {"id": "g-042", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "YAN", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Daily Performance Insights with Drill & Blast at YAN.", "notes": ""}, {"id": "g-043", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "PBO", "workArea": "Drill & Blast", "team": "Drill & Blast Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Daily Performance Insights with Drill & Blast at PBO.", "notes": ""}, {"id": "g-044", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "MDO", "workArea": "Development", "team": "Development Team", "stage": "Pilot", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-10-28", "purpose": "Pilot Daily Performance Insights with Development at MDO.", "notes": ""}, {"id": "g-045", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "WAN", "workArea": "Development", "team": "Development Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Daily Performance Insights with Development at WAN.", "notes": ""}, {"id": "g-046", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "YAN", "workArea": "Development", "team": "Development Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Daily Performance Insights with Development at YAN.", "notes": ""}, {"id": "g-047", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "PBO", "workArea": "Development", "team": "Development Team", "stage": "Pilot", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-10-28", "purpose": "Pilot Daily Performance Insights with Development at PBO.", "notes": ""}, {"id": "g-048", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "YAN", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "Daily Performance Insights live and embedded with Fixed Plant at YAN.", "notes": "Continuing pilot of additional scope alongside engaged use."}, {"id": "g-049", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "GDI", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Daily Performance Insights with Fixed Plant at GDI.", "notes": ""}, {"id": "g-050", "initiativeId": "dpi", "portfolio": "Frontline Analytics", "site": "HD4", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Daily Performance Insights live and embedded with Fixed Plant at HD4.", "notes": "Continuing pilot of additional scope alongside engaged use."}, {"id": "g-051", "initiativeId": "dwm", "portfolio": "Maintenance Excellence", "site": "HD1", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Design", "status": "Planned", "startDate": "2026-09-01", "endDate": "2026-11-28", "purpose": "Design the Digital Work Management solution for OE/BI at HD1.", "notes": ""}, {"id": "g-052", "initiativeId": "dwm", "portfolio": "Maintenance Excellence", "site": "HD1", "workArea": "Production", "team": "Production Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-11-01", "endDate": "2027-01-28", "purpose": "Scope Production needs at HD1 for Digital Work Management.", "notes": ""}, {"id": "g-053", "initiativeId": "dwm", "portfolio": "Maintenance Excellence", "site": "GDI", "workArea": "Production", "team": "Production Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-12-01", "endDate": "2027-02-28", "purpose": "Scope Production needs at GDI for Digital Work Management.", "notes": ""}, {"id": "g-054", "initiativeId": "epermitting", "portfolio": "Safety & Risk", "site": "WAN", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-10-01", "endDate": "2026-12-28", "purpose": "Scope OE/BI needs at WAN for E-Permitting.", "notes": ""}, {"id": "g-055", "initiativeId": "epermitting", "portfolio": "Safety & Risk", "site": "GTP", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-11-01", "endDate": "2027-01-28", "purpose": "Scope Fixed Plant needs at GTP for E-Permitting.", "notes": ""}, {"id": "g-056", "initiativeId": "epermitting", "portfolio": "Safety & Risk", "site": "PBO", "workArea": "Production", "team": "Production Team", "stage": "Design", "status": "Planned", "startDate": "2026-11-01", "endDate": "2027-01-28", "purpose": "Design the E-Permitting solution for Production at PBO.", "notes": ""}, {"id": "g-057", "initiativeId": "trueview", "portfolio": "Asset Health", "site": "GDI", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-02-01", "endDate": "2027-01-28", "purpose": "TrueView live and embedded with OE/BI at GDI.", "notes": ""}, {"id": "g-058", "initiativeId": "trueview", "portfolio": "Asset Health", "site": "GDI", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "TrueView live and embedded with Fixed Plant at GDI.", "notes": ""}, {"id": "g-059", "initiativeId": "trueview", "portfolio": "Asset Health", "site": "PBO", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Pilot", "status": "Active", "startDate": "2026-06-01", "endDate": "2026-10-28", "purpose": "Pilot TrueView with Fixed Plant at PBO.", "notes": ""}, {"id": "g-060", "initiativeId": "hydrohaul", "portfolio": "Water", "site": "YAN", "workArea": "Mine Water Management", "team": "Mine Water Management Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-10-01", "endDate": "2026-12-28", "purpose": "Scope Mine Water Management needs at YAN for HydroHaul.", "notes": ""}, {"id": "g-061", "initiativeId": "hydrohaul", "portfolio": "Water", "site": "GDI", "workArea": "Mine Water Management", "team": "Mine Water Management Team", "stage": "Design", "status": "Planned", "startDate": "2026-10-01", "endDate": "2026-12-28", "purpose": "Design the HydroHaul solution for Mine Water Management at GDI.", "notes": ""}, {"id": "g-062", "initiativeId": "hydrohaul", "portfolio": "Water", "site": "YAN", "workArea": "Production", "team": "Production Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-12-01", "endDate": "2027-02-28", "purpose": "Scope Production needs at YAN for HydroHaul.", "notes": ""}, {"id": "g-063", "initiativeId": "frontline-ai", "portfolio": "Frontline Analytics", "site": "YAN", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-10-01", "endDate": "2026-12-28", "purpose": "Scope OE/BI needs at YAN for Frontline AI Insights.", "notes": ""}, {"id": "g-064", "initiativeId": "frontline-ai", "portfolio": "Frontline Analytics", "site": "WAN", "workArea": "Production", "team": "Production Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-11-01", "endDate": "2027-01-28", "purpose": "Scope Production needs at WAN for Frontline AI Insights.", "notes": ""}, {"id": "g-065", "initiativeId": "digby", "portfolio": "Control Room", "site": "PMO Control", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Design", "status": "Planned", "startDate": "2026-11-01", "endDate": "2027-01-28", "purpose": "Design the DIGBY solution for OE/BI at PMO Control.", "notes": ""}, {"id": "g-066", "initiativeId": "digby", "portfolio": "Control Room", "site": "PBO", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-10-01", "endDate": "2026-12-28", "purpose": "Scope Fixed Plant needs at PBO for DIGBY.", "notes": ""}, {"id": "g-067", "initiativeId": "rsm-work-mgmt", "portfolio": "Maintenance Excellence", "site": "BM4", "workArea": "MEM", "team": "MEM Team", "stage": "Readiness", "status": "Planned", "startDate": "2026-08-01", "endDate": "2026-10-28", "purpose": "Prepare MEM at BM4 for RSM Work Management go-live.", "notes": ""}, {"id": "g-068", "initiativeId": "rsm-work-mgmt", "portfolio": "Maintenance Excellence", "site": "BM4", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Development", "status": "Planned", "startDate": "2026-10-01", "endDate": "2027-01-28", "purpose": "Build RSM Work Management capability for Fixed Plant at BM4.", "notes": ""}, {"id": "g-069", "initiativeId": "paperless-maintainer", "portfolio": "Maintenance Excellence", "site": "WAN", "workArea": "MEM", "team": "MEM Team", "stage": "Pilot", "status": "Active", "startDate": "2026-04-01", "endDate": "2026-08-28", "purpose": "Pilot Paperless Maintainer with MEM at WAN.", "notes": ""}, {"id": "g-070", "initiativeId": "paperless-maintainer", "portfolio": "Maintenance Excellence", "site": "WAN", "workArea": "Fixed Plant", "team": "Fixed Plant Team", "stage": "Pilot", "status": "Active", "startDate": "2026-05-01", "endDate": "2026-09-28", "purpose": "Pilot Paperless Maintainer with Fixed Plant at WAN.", "notes": ""}, {"id": "g-071", "initiativeId": "safety-intel", "portfolio": "Safety & Risk", "site": "GDI", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Development", "status": "Planned", "startDate": "2026-10-01", "endDate": "2027-01-28", "purpose": "Build Integrated Safety Intelligence capability for OE/BI at GDI.", "notes": ""}, {"id": "g-072", "initiativeId": "safety-intel", "portfolio": "Safety & Risk", "site": "RV", "workArea": "Production", "team": "Production Team", "stage": "Discovery", "status": "Planned", "startDate": "2026-10-01", "endDate": "2026-12-28", "purpose": "Scope Production needs at RV for Integrated Safety Intelligence.", "notes": ""}, {"id": "g-073", "initiativeId": "control-room-digital", "portfolio": "Control Room", "site": "PMO Control", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-03-01", "endDate": "2027-02-28", "purpose": "Control Room Digital live and embedded with OE/BI at PMO Control.", "notes": ""}, {"id": "g-074", "initiativeId": "control-room-digital", "portfolio": "Control Room", "site": "MDO", "workArea": "OE/BI", "team": "OE/BI Team", "stage": "Engaged", "status": "Active", "startDate": "2026-04-01", "endDate": "2027-03-28", "purpose": "Control Room Digital live and embedded with OE/BI at MDO.", "notes": ""}], "updates": [{"id": "u-1", "projectId": "trueview", "date": "2026-06-15", "summary": "Scaled to three processing hubs; sensor coverage now at 78%. Reliability crews using the health view in daily reviews.", "risks": "Sensor supply lead times could slow the final hub.", "decisionsRequired": "None this period.", "submittedBy": "Phillip Rickson"}, {"id": "u-2", "projectId": "hydrohaul", "date": "2026-06-09", "summary": "Build progressing but fleet telemetry integration is blocked on a delayed vendor API.", "risks": "Vendor API slip threatens the November haulage scheduler beta.", "decisionsRequired": "Approve fallback to a file-based telemetry feed if the API slips past July.", "submittedBy": "Brett Riley"}, {"id": "u-3", "projectId": "cadence", "date": "2026-06-18", "summary": "Paraburdoo pilot is live and plan adherence is up 12 points over baseline.", "risks": "Crew availability over the shutdown window may slow the adherence review.", "decisionsRequired": "Confirm Tom Price as the next onboarding site.", "submittedBy": "Kayne Ryan"}, {"id": "u-4", "projectId": "frontline-ai", "date": "2026-06-20", "summary": "Discovery complete; four use cases prioritised with frontline supervisors.", "risks": "Access to operational data sources for the prototype is not yet confirmed.", "decisionsRequired": "Approve data access for the prototype environment.", "submittedBy": "Stephen Mackinlay"}, {"id": "u-5", "projectId": "digby", "date": "2026-06-11", "summary": "Design review held; train-ordering integration scope is larger than first estimated.", "risks": "Scope risk on train ordering could push out the build start.", "decisionsRequired": "Decide whether train ordering is in or out of the first build.", "submittedBy": "Paulo Martins"}, {"id": "u-6", "projectId": "rsm-work-mgmt", "date": "2026-06-05", "summary": "Two key vendor resources rolled off; the build milestone has slipped six weeks.", "risks": "First site go-live in October is now at risk.", "decisionsRequired": "Approve backfill of vendor resources or re-baseline the go-live date.", "submittedBy": "Mark Playle"}, {"id": "u-7", "projectId": "paperless-maintainer", "date": "2026-06-17", "summary": "West Angelas pilot continues well; 1,283 paper forms retired and field feedback is positive.", "risks": "Device ruggedisation needs confirming before multi-site rollout.", "decisionsRequired": "None this period.", "submittedBy": "Mark Playle"}, {"id": "u-8", "projectId": "shift-handover", "date": "2026-06-19", "summary": "Scaled to nine crews; adoption at 84% and tracking ahead of target.", "risks": "Mining crew rollout depends on network coverage at the workface.", "decisionsRequired": "None this period.", "submittedBy": "Kelvin Chew"}, {"id": "u-9", "projectId": "safety-intel", "date": "2026-06-13", "summary": "Core data model built; two of five source systems integrated.", "risks": "HSEC source access is pending and could delay the third integration.", "decisionsRequired": "Expedite HSEC data access approval.", "submittedBy": "Ramon Cliquet de Oliveira"}, {"id": "u-10", "projectId": "control-room-digital", "date": "2026-06-16", "summary": "Quarterly platform patching complete; platform uptime at 99.4%.", "risks": "Ageing failover hardware remains a background risk.", "decisionsRequired": "None this period.", "submittedBy": "Paulo Martins"}, {"id": "u-11", "projectId": "trueview", "date": "2026-05-02", "summary": "First hub reached 50% sensor coverage; baseline alerts tuned with crews.", "risks": "Alert noise during tuning could reduce early trust.", "decisionsRequired": "None this period.", "submittedBy": "Phillip Rickson"}, {"id": "u-12", "projectId": "cadence", "date": "2026-05-09", "summary": "Cadence boards stood up for two crews ahead of the pilot start.", "risks": "None material.", "decisionsRequired": "None this period.", "submittedBy": "Kayne Ryan"}, {"id": "u-13", "projectId": "dpi", "date": "2026-06-21", "summary": "Piloting across Production, Drill & Blast and Development at five sites; engaged at Gudai-Darri and Greater Tom Price.", "risks": "Pilot fatigue if the scale decision slips.", "decisionsRequired": "Confirm scope for the November scale decision.", "submittedBy": "Stephen Mackinlay"}, {"id": "u-14", "projectId": "dwm", "date": "2026-06-10", "summary": "Design under way with OE/BI and Production at Hope Downs 1.", "risks": "Overlap with RSM Work Management scope needs clear boundaries.", "decisionsRequired": "Agree the boundary between Digital Work Management and RSM Work Management.", "submittedBy": "Mark Playle"}, {"id": "u-15", "projectId": "epermitting", "date": "2026-06-23", "summary": "Discovery started with HSEC and OE/BI; scoping first sites for digital permit to work.", "risks": "Regulatory sign-off path not yet confirmed.", "decisionsRequired": "Confirm the first two sites for design.", "submittedBy": "Ramon Cliquet de Oliveira"}]};
+</script>
+<script>
+"use strict";
+/* Frontline Digital Portfolio Hub — clickable static walkthrough.
+   Vanilla JS, event-delegated (no inline handlers). Data is embedded above as DATA. */
+
+// ----------------------------- constants -----------------------------
+var SITES = ["MDO","WAN","YAN","GDI","GTP","BM4","GNAM","HD1","HD4","PBO","RV","PMO Control"];
+var SITE_NAMES = {MDO:"Mesa A",WAN:"West Angelas",YAN:"Yandicoogina",GDI:"Gudai-Darri",GTP:"Greater Tom Price",BM4:"Brockman 4",GNAM:"Greater Nammuldi",HD1:"Hope Downs 1",HD4:"Hope Downs 4",PBO:"Paraburdoo",RV:"Robe Valley","PMO Control":"PMO / Control"};
+var WORK_AREAS = ["OE/BI","Production","Drill & Blast","Development","Mine Water Management","MEM","Fixed Plant"];
+var ENG_STAGES = ["Discovery","Design","Development","Prototype","Readiness","Pilot","Engaged","Scale"];
+var STAGE_COLORS = {Discovery:"#8c94a3",Design:"#5f76b5",Development:"#4566bf",Prototype:"#5a8fb0",Readiness:"#c2902a",Pilot:"#2f9e8f",Engaged:"#3d8a4f",Scale:"#2f6b3e"};
+var STATUS_BAR = {Green:"#3d8a4f",Amber:"#c08a1e",Red:"#bc3b3b","On Hold":"#5b6b8c",Complete:"#5a6470"};
+var STATUSES = ["Green","Amber","Red","On Hold","Complete"];
+var MILE_COLOR = {Complete:"#5a6470","On Track":"#3d8a4f",Planned:"#5f76b5","At Risk":"#c08a1e",Delayed:"#bc3b3b"};
+var ENG_STATUS = ["Planned","Active","On Hold","Complete"];
+var ENG_STATUS_COLOR = {Active:"#3d8a4f",Planned:"#5f76b5","On Hold":"#c08a1e",Complete:"#5a6470"};
+var STAGE_ORDER = {Idea:0,Discovery:1,Design:2,Build:3,Pilot:4,Scale:5,Sustain:6,Complete:7};
+var TODAY = new Date(2026,5,25); // app "today" matches the sample data
+
+// ----------------------------- helpers -----------------------------
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function parseISO(s){var p=String(s).split("-");return new Date(+p[0],(+p[1]||1)-1,+p[2]||1);}
+var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDate(s){if(!s)return "—";var d=parseISO(s);return d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear();}
+function todayISO(){var m=String(TODAY.getMonth()+1).padStart(2,"0"),d=String(TODAY.getDate()).padStart(2,"0");return TODAY.getFullYear()+"-"+m+"-"+d;}
+function days(s){return Math.round((parseISO(s)-TODAY)/86400000);}
+function relDay(s){var d=days(s);if(d===0)return"today";if(d===1)return"tomorrow";if(d===-1)return"yesterday";return d>0?("in "+d+" days"):(Math.abs(d)+" days ago");}
+function initials(n){return String(n).split(/\s+/).filter(Boolean).slice(0,2).map(function(x){return x[0].toUpperCase();}).join("");}
+var AV=["#0f6cbd","#3d8a4f","#8a5cb5","#bc6a2e","#2f9e8f","#b3477a","#5f76b5","#a23b3b"];
+function avColor(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return AV[h%AV.length];}
+function avatar(n,sz){sz=sz||24;return '<span class="avatar" style="width:'+sz+'px;height:'+sz+'px;background:'+avColor(n)+'">'+esc(initials(n))+'</span>';}
+
+// minimal inline-SVG icon set
+var P={
+ home:'<path d="M4 11.5 12 5l8 6.5M6 10.5V19h12v-8.5"/>',
+ roadmap:'<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="10" cy="17" r="1.4"/>',
+ projects:'<rect x="4" y="4" width="7" height="7" rx="1.2"/><rect x="13" y="4" width="7" height="7" rx="1.2"/><rect x="4" y="13" width="7" height="7" rx="1.2"/><rect x="13" y="13" width="7" height="7" rx="1.2"/>',
+ engagements:'<circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M7.6 7.4 10.6 16M16.4 7.4 13.4 16M8 6h8"/>',
+ sites:'<path d="M12 21s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10Z"/><circle cx="12" cy="11" r="2.2"/>',
+ updates:'<path d="M5 19h14M7 15.5 16 6.5l2 2-9 9-2.6.6.6-2.6Z"/>',
+ flag:'<path d="M6 21V4m0 1h11l-2 3.5L17 12H6"/>',
+ location:'<path d="M12 21s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10Z"/><circle cx="12" cy="11" r="2.2"/>',
+ calendar:'<rect x="4" y="5.5" width="16" height="14" rx="1.6"/><path d="M4 9.5h16M8 4v3M16 4v3"/>',
+ clock:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4.2l2.6 1.6"/>',
+ check:'<circle cx="12" cy="12" r="8"/><path d="m8.5 12 2.3 2.3 4.7-4.7"/>',
+ warning:'<path d="M12 4 21 19H3L12 4Z"/><path d="M12 10v4M12 16.5v.5"/>',
+ grid:'<rect x="3.5" y="3.5" width="17" height="17" rx="1.6"/><path d="M3.5 9.5h17M3.5 15h17M9.5 3.5v17M15 3.5v17"/>',
+ team:'<circle cx="9" cy="9" r="2.8"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 7.2a2.6 2.6 0 0 1 0 5M17 14.2a5 5 0 0 1 3.5 4.8"/>',
+ link:'<path d="M9.5 14.5 14.5 9.5"/><path d="M11 7.5 12.5 6a3.2 3.2 0 0 1 4.5 4.5l-1.5 1.5"/><path d="M13 16.5 11.5 18A3.2 3.2 0 0 1 7 13.5L8.5 12"/>',
+ search:'<circle cx="11" cy="11" r="6"/><path d="m20 20-3.2-3.2"/>',
+ filter:'<path d="M4 6h16l-6 7v5l-4 1.5V13L4 6Z"/>',
+ person:'<circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/>'
+};
+function ic(n,sz){sz=sz||20;return '<svg viewBox="0 0 24 24" width="'+sz+'" height="'+sz+'" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(P[n]||"")+'</svg>';}
+
+// badges
+function statusBadge(s){return '<span class="chip" style="background:'+(STATUS_BAR[s]||"#777")+'">'+esc(s)+'</span>';}
+function stageChip(s,sm){return '<span class="chip'+(sm?" sm":"")+'" style="background:'+(STAGE_COLORS[s]||"#777")+'">'+esc(s)+'</span>';}
+function mileBadge(s){return '<span class="chip sm" style="background:'+(MILE_COLOR[s]||"#777")+'">'+esc(s)+'</span>';}
+function engStatusBadge(s){return '<span class="badge outline" style="border-color:'+(ENG_STATUS_COLOR[s]||"#aaa")+';color:'+(ENG_STATUS_COLOR[s]||"#555")+'">'+esc(s)+'</span>';}
+function stageBadgeProj(s){return '<span class="badge outline">'+esc(s)+'</span>';}
+
+// ----------------------------- selectors -----------------------------
+function projById(id){return DATA.projects.filter(function(p){return p.id===id;})[0];}
+function titleOf(id){var p=projById(id);return p?p.title:id;}
+function engForInit(id){return DATA.engagements.filter(function(e){return e.initiativeId===id;}).sort(byStart);}
+function engForSite(s){return DATA.engagements.filter(function(e){return e.site===s;}).sort(byStart);}
+function byStart(a,b){return parseISO(a.startDate)-parseISO(b.startDate);}
+function activeSites(es){var set={};es.forEach(function(e){set[e.site]=1;});return SITES.filter(function(s){return set[s];});}
+function activeWAs(es){var set={};es.forEach(function(e){set[e.workArea]=1;});return WORK_AREAS.filter(function(w){return set[w];});}
+function sitesForInit(id){var set={};DATA.engagements.forEach(function(e){if(e.initiativeId===id)set[e.site]=1;});return SITES.filter(function(s){return set[s];});}
+function wasForInit(id){var set={};DATA.engagements.forEach(function(e){if(e.initiativeId===id)set[e.workArea]=1;});return WORK_AREAS.filter(function(w){return set[w];});}
+function furthest(es){if(!es.length)return null;return es.slice().sort(function(a,b){return ENG_STAGES.indexOf(b.stage)-ENG_STAGES.indexOf(a.stage);})[0].stage;}
+function nextMile(id){var open=DATA.milestones.filter(function(m){return m.projectId===id&&m.status!=="Complete";}).sort(function(a,b){return parseISO(a.date)-parseISO(b.date);});var up=open.filter(function(m){return parseISO(m.date)>=TODAY;});return up[0]||open[0];}
+function upMiles(n){return DATA.milestones.filter(function(m){return m.status!=="Complete"&&parseISO(m.date)>=TODAY;}).sort(function(a,b){return parseISO(a.date)-parseISO(b.date);}).slice(0,n);}
+function upEng(n){return DATA.engagements.filter(function(e){return parseISO(e.startDate)>=TODAY&&e.status!=="Complete";}).sort(byStart).slice(0,n);}
+function attention(){var onhold={};DATA.engagements.forEach(function(e){if(e.status==="On Hold")onhold[e.initiativeId]=1;});var sev={Red:0,Amber:1,"On Hold":2};return DATA.projects.filter(function(p){return p.status==="Red"||p.status==="Amber"||onhold[p.id];}).sort(function(a,b){return (sev[a.status]==null?9:sev[a.status])-(sev[b.status]==null?9:sev[b.status]);});}
+function recently(n){return DATA.projects.slice().sort(function(a,b){return parseISO(b.lastUpdated)-parseISO(a.lastUpdated);}).slice(0,n);}
+function sitesByActivity(){return activeSites(DATA.engagements).map(function(s){var at=DATA.engagements.filter(function(e){return e.site===s;});var inits={};at.forEach(function(e){inits[e.initiativeId]=1;});return{site:s,engagements:at.length,initiatives:Object.keys(inits).length};}).sort(function(a,b){return b.engagements-a.engagements||b.initiatives-a.initiatives;});}
+function cellKey(w,s){return w+"||"+s;}
+function buildMatrix(es){var m={};es.forEach(function(e){var k=cellKey(e.workArea,e.site);(m[k]=m[k]||[]).push(e);});return m;}
+function applyEngFilters(f){return DATA.engagements.filter(function(e){return (!f.initiativeId||e.initiativeId===f.initiativeId)&&(!f.site||e.site===f.site)&&(!f.portfolio||e.portfolio===f.portfolio)&&(!f.workArea||e.workArea===f.workArea)&&(!f.status||e.status===f.status)&&(!f.stage||e.stage===f.stage);});}
+
+// ----------------------------- state -----------------------------
+var state={
+ view:"home", projectId:null, detailTab:"milestones",
+ rm:{portfolio:"",site:"",workArea:"",stage:""},
+ pf:{q:"",portfolio:"",stage:"",status:""},
+ eng:{initiativeId:"",site:"",portfolio:"",workArea:"",status:"",stage:""},
+ engTab:"matrix", heatSel:"",
+ site:SITES[0], updTab:"project", flash:""
+};
+
+// ----------------------------- shared UI -----------------------------
+function pageHead(eyebrow,title,sub,actions){
+ return '<div class="page-head"><div><div class="eyebrow">'+esc(eyebrow)+'</div><h1 class="page-title">'+esc(title)+'</h1><div class="page-sub">'+esc(sub)+'</div></div>'+(actions?'<div class="head-actions">'+actions+'</div>':"")+'</div><div class="rule"></div>';
+}
+function section(title,icon,body,flush,action){
+ return '<section class="surface section"><div class="section-head"><div class="st">'+(icon?ic(icon,18):"")+esc(title)+'</div>'+(action||"")+'</div><div class="section-body'+(flush?" flush":"")+'">'+body+'</div></section>';
+}
+function stat(lab,val,hint,accent){
+ return '<div class="surface stat">'+(accent?'<span class="accent" style="background:'+accent+'"></span>':"")+'<div class="val">'+esc(val)+'</div><div class="lab">'+esc(lab)+'</div>'+(hint?'<div class="hint">'+esc(hint)+'</div>':"")+'</div>';
+}
+function sel(filterAttr,cur,opts,allLabel){
+ var o='<option value="">'+esc(allLabel)+'</option>';
+ opts.forEach(function(op){var v=op.value!=null?op.value:op,l=op.label!=null?op.label:op;o+='<option value="'+esc(v)+'"'+(v===cur?" selected":"")+'>'+esc(l)+'</option>';});
+ return '<div class="field"><label>'+esc(filterAttr.label)+'</label><select data-fgroup="'+filterAttr.group+'" data-fkey="'+filterAttr.key+'">'+o+'</select></div>';
+}
+function emptyState(icon,title,msg){return '<div class="surface" style="padding:40px;text-align:center"><div style="display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--surface-3);color:var(--text-3);margin-bottom:8px">'+ic(icon,22)+'</div><div style="font-weight:600;font-size:15px">'+esc(title)+'</div>'+(msg?'<div class="muted" style="max-width:420px;margin:6px auto 0">'+esc(msg)+'</div>':"")+'</div>';}
+
+function mileRow(m){return '<a class="row click" data-act="project" data-id="'+m.projectId+'"><span class="ico">'+ic("flag",16)+'</span><div class="bd"><div class="pri">'+esc(m.name)+'</div><div class="sec">'+esc(titleOf(m.projectId))+'</div></div><div class="rt"><span class="dt">'+fmtDate(m.date)+'</span>'+mileBadge(m.status)+'</div></a>';}
+function engRow(e,mode){var pri,sec;if(mode==="site"){pri=titleOf(e.initiativeId);sec=e.workArea+" · "+e.purpose;}else if(mode==="init"){pri=e.site+" · "+e.workArea;sec=e.purpose;}else{pri=e.site+" · "+e.workArea;sec=titleOf(e.initiativeId)+" — "+e.purpose;}
+ return '<a class="row click" data-act="project" data-id="'+e.initiativeId+'"><span class="ico">'+ic("location",16)+'</span><div class="bd"><div class="pri">'+esc(pri)+'</div><div class="sec">'+esc(sec)+'</div></div><div class="rt">'+stageChip(e.stage,true)+'<span class="dt">'+fmtDate(e.startDate)+' · '+esc(e.status)+'</span></div></a>';}
+function projMini(p){return '<a class="row click" data-act="project" data-id="'+p.id+'"><div class="bd"><div class="pri">'+esc(p.title)+'</div><div class="sec">'+esc(p.owner)+' · updated '+relDay(p.lastUpdated)+'</div></div><div class="rt">'+statusBadge(p.status)+'</div></a>';}
+
+// ----------------------------- timeline -----------------------------
+var D0=new Date(2026,0,1).getTime(), D1=new Date(2029,0,1).getTime(), SPAN=D1-D0;
+function frac(ms){return Math.max(0,Math.min(1,(ms-D0)/SPAN));}
+function timeline(projects){
+ var years=[2026,2027,2028], qs=["Q1","Q2","Q3","Q4"];
+ var head='<div class="tl-head"><div class="lab">Initiative</div><div class="tl-years">'+years.map(function(y){return '<div class="tl-year"><div class="y">'+y+'</div><div class="tl-qs">'+qs.map(function(q){return '<div class="tl-q">'+q+'</div>';}).join("")+'</div></div>';}).join("")+'</div></div>';
+ var tf=frac(TODAY.getTime()), tline='<div class="tl-today" style="left:'+(tf*100)+'%"></div>';
+ var rows=projects.map(function(p){
+   var l=frac(parseISO(p.startDate).getTime()), r=frac(parseISO(p.endDate).getTime()+86400000), w=Math.max((r-l)*100,2);
+   return '<div class="tl-row"><div class="lab"><div class="t">'+esc(p.title)+'</div><div class="s">'+esc(p.portfolio)+'</div></div><div class="tl-track">'+tline+'<a class="tl-bar" data-act="project" data-id="'+p.id+'" style="left:'+(l*100)+'%;width:'+w+'%;background:'+(STATUS_BAR[p.status]||"#777")+'" title="'+esc(p.title+" · "+p.stage+" · "+fmtDate(p.startDate)+" – "+fmtDate(p.endDate))+'"><span>'+esc(p.stage)+'</span></a></div></div>';
+ }).join("");
+ return '<div class="surface tl-scroll"><div class="tl">'+head+rows+'</div></div>';
+}
+function statusLegend(){return '<div class="legend"><span style="font-weight:600;font-size:12px">Status</span>'+STATUSES.map(function(s){return '<span class="it"><span class="sw" style="background:'+STATUS_BAR[s]+'"></span>'+esc(s)+'</span>';}).join("")+'</div>';}
+function stageLegend(){return '<div class="legend"><span style="font-weight:600;font-size:12px">Stage</span>'+ENG_STAGES.map(function(s){return '<span class="it"><span class="sw" style="background:'+STAGE_COLORS[s]+'"></span>'+esc(s)+'</span>';}).join("")+'</div>';}
+
+// ----------------------------- views -----------------------------
+function viewHome(){
+ var inDel=DATA.projects.filter(function(p){return ["Build","Pilot","Scale"].indexOf(p.stage)>=0;}).length;
+ var att=attention(), um=upMiles(6), ue=upEng(6), tops=sitesByActivity().slice(0,6);
+ var stageBars=ENG_STAGES; // not used; use project stage bars
+ var byStage=Object.keys(STAGE_ORDER).map(function(s){return{label:s,count:DATA.projects.filter(function(p){return p.stage===s;}).length,color:"#3a5a8c"};});
+ var byStatus=STATUSES.map(function(s){return{label:s,count:DATA.projects.filter(function(p){return p.status===s;}).length,color:STATUS_BAR[s]};});
+ var html=pageHead("Frontline Digital","What we're working on","Portfolio & engagement snapshot · "+fmtDate(todayISO())+" · "+DATA.projects.length+" initiatives",
+   '<button class="btn" data-act="nav" data-view="engagements">Engagement Hub</button><button class="btn primary" data-act="nav" data-view="roadmap">Open roadmap</button>');
+ html+='<div class="stat-grid">'+stat("Initiatives",DATA.projects.length,"","#3a5a8c")+stat("In delivery",inDel,"Build, Pilot or Scale","#3d8a4f")+stat("Needs attention",att.length,"At-risk or on-hold","#bc3b3b")+stat("Sites engaged",activeSites(DATA.engagements).length,"Across all engagements","#2f9e8f")+'</div>';
+ html+='<div style="margin-bottom:20px">'+section("Portfolio roadmap · 2026–2028","roadmap",'<div style="padding:12px">'+timeline(DATA.projects.slice().sort(byStartProj))+'</div>',true,'<button class="btn subtle sm" data-act="nav" data-view="roadmap">Open</button>')+'</div>';
+ html+='<div class="grid-2"><div class="col">';
+ html+=section("Upcoming milestones","flag",'<div class="bodypad">'+(um.length?um.map(mileRow).join(""):'<div class="muted">No milestones due.</div>')+'</div>',true);
+ html+=section("Upcoming site engagements","location",'<div class="bodypad">'+(ue.length?ue.map(function(e){return engRow(e,"default");}).join(""):'<div class="muted">No engagements scheduled.</div>')+'</div>',true,'<button class="btn subtle sm" data-act="nav" data-view="engagements">View all</button>');
+ html+='</div><div class="col">';
+ html+=section("Initiatives requiring attention","warning",'<div class="bodypad">'+(att.length?att.map(projMini).join(""):'<div class="muted">Nothing flagged.</div>')+'</div>',true);
+ html+=section("Sites with highest activity","sites",'<div class="bodypad">'+tops.map(function(sa){return '<a class="row click" data-act="site" data-id="'+esc(sa.site)+'"><div class="bd"><div class="pri">'+esc(sa.site)+'</div><div class="sec">'+esc(SITE_NAMES[sa.site])+'</div></div><div class="rt"><span class="dt">'+sa.engagements+' eng · '+sa.initiatives+' init</span></div></a>';}).join("")+'</div>',true);
+ html+=section("Projects by stage","roadmap",bars(byStage));
+ html+=section("Projects by status","check",bars(byStatus));
+ html+='</div></div>';
+ return html;
+}
+function byStartProj(a,b){return String(a.startDate).localeCompare(b.startDate);}
+function bars(items){var max=Math.max.apply(null,[1].concat(items.map(function(i){return i.count;})));return '<div class="bars">'+items.map(function(i){return '<div class="bar-row"><span class="bar-lab">'+esc(i.label)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+(i.count/max*100)+'%;background:'+i.color+';opacity:'+(i.count===0?.25:1)+'"></div></div><span class="bar-num">'+i.count+'</span></div>';}).join("")+'</div>';}
+
+function viewRoadmap(){
+ var f=state.rm;
+ var sbp={},wbp={};DATA.engagements.forEach(function(e){(sbp[e.initiativeId]=sbp[e.initiativeId]||{})[e.site]=1;(wbp[e.initiativeId]=wbp[e.initiativeId]||{})[e.workArea]=1;});
+ var fp=DATA.projects.filter(function(p){return (!f.portfolio||p.portfolio===f.portfolio)&&(!f.stage||p.stage===f.stage)&&(!f.site||(sbp[p.id]&&sbp[p.id][f.site]))&&(!f.workArea||(wbp[p.id]&&wbp[p.id][f.workArea]));}).sort(byStartProj);
+ var portfolios=uniq(DATA.projects.map(function(p){return p.portfolio;})).sort();
+ var prodStages=uniq(DATA.projects.map(function(p){return p.stage;})).sort(function(a,b){return STAGE_ORDER[a]-STAGE_ORDER[b];});
+ var any=f.portfolio||f.site||f.workArea||f.stage;
+ var html=pageHead("Portfolio Roadmap","Portfolio Roadmap 2026–2028","Generated live from initiative start and end dates — no manual slides.", any?'<button class="btn" data-act="clear" data-group="rm">Clear filters</button>':"");
+ html+='<div class="filters">'+sel({label:"Portfolio",group:"rm",key:"portfolio"},f.portfolio,portfolios,"All portfolios")+sel({label:"Site",group:"rm",key:"site"},f.site,activeSites(DATA.engagements),"All sites")+sel({label:"Work area",group:"rm",key:"workArea"},f.workArea,activeWAs(DATA.engagements),"All work areas")+sel({label:"Stage",group:"rm",key:"stage"},f.stage,prodStages,"All stages")+'<div class="spacer"></div><div class="count">'+fp.length+' initiative'+(fp.length===1?"":"s")+'</div></div>';
+ html+= fp.length? (timeline(fp)+statusLegend()) : emptyState("filter","No initiatives match these filters","Try widening the selection.");
+ return html;
+}
+function uniq(a){var s={},r=[];a.forEach(function(x){if(!s[x]){s[x]=1;r.push(x);}});return r;}
+
+function viewProjects(){
+ var f=state.pf,q=f.q.trim().toLowerCase();
+ var fp=DATA.projects.filter(function(p){return (!f.portfolio||p.portfolio===f.portfolio)&&(!f.stage||p.stage===f.stage)&&(!f.status||p.status===f.status)&&(!q||[p.title,p.owner,p.sponsor,p.projectCode,p.productArea,p.portfolio,p.summary].join(" ").toLowerCase().indexOf(q)>=0);}).sort(function(a,b){return a.title.localeCompare(b.title);});
+ var portfolios=uniq(DATA.projects.map(function(p){return p.portfolio;})).sort();
+ var stages=uniq(DATA.projects.map(function(p){return p.stage;})).sort(function(a,b){return STAGE_ORDER[a]-STAGE_ORDER[b];});
+ var statuses=uniq(DATA.projects.map(function(p){return p.status;})).sort();
+ var html=pageHead("Projects","All projects","Search and filter the full Frontline Digital portfolio.","");
+ html+='<div class="filters"><div class="field"><label>Search</label><input type="text" data-search="pf" value="'+esc(f.q)+'" placeholder="Search name, owner, code…"></div>'+sel({label:"Portfolio",group:"pf",key:"portfolio"},f.portfolio,portfolios,"All portfolios")+sel({label:"Stage",group:"pf",key:"stage"},f.stage,stages,"All stages")+sel({label:"Status",group:"pf",key:"status"},f.status,statuses,"All statuses")+'<div class="spacer"></div><div class="count">'+fp.length+' project'+(fp.length===1?"":"s")+'</div></div>';
+ if(!fp.length){html+=emptyState("search","No projects found","No projects match your search and filters.");return html;}
+ html+='<div class="cards">'+fp.map(function(p){var nm=nextMile(p.id);return '<div class="surface pcard" data-act="project" data-id="'+p.id+'"><div class="top"><div><div class="nm">'+esc(p.title)+'</div><div class="cd">'+esc(p.projectCode)+'</div></div>'+statusBadge(p.status)+'</div><div class="ch">'+stageBadgeProj(p.stage)+'<span class="badge tint">'+esc(p.portfolio)+'</span></div><div class="ow">'+avatar(p.owner,24)+esc(p.owner)+'</div><div class="nx">'+ic("flag",16)+'<span>Next:</span> '+esc(nm?(nm.name+" · "+fmtDate(nm.date)):"No upcoming milestone")+'</div></div>';}).join("")+'</div>';
+ return html;
+}
+
+function initiativePanel(p){
+ var mine=engForInit(p.id), sites=sitesForInit(p.id), was=wasForInit(p.id);
+ var active=mine.filter(function(e){return e.status==="Active";}).length, planned=mine.filter(function(e){return e.status==="Planned";}).length;
+ if(!mine.length) return section("Engagements","engagements",'<div class="muted">No site engagements recorded for this initiative yet.</div>');
+ var foot='<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px">'+stat("Sites engaged",sites.length)+stat("Work areas",was.length)+stat("Active",active,"","#3d8a4f")+stat("Planned",planned,"","#5f76b5")+'</div>';
+ foot+='<div style="color:var(--text-3);font-size:12px;margin-bottom:6px">Sites engaged</div><div class="chips" style="margin-bottom:14px">'+sites.map(function(s){return '<span class="badge tint">'+esc(s)+'</span>';}).join("")+'</div>';
+ foot+='<div style="color:var(--text-3);font-size:12px;margin-bottom:6px">Teams &amp; work areas engaged</div><div class="chips">'+was.map(function(w){return '<span class="badge tint">'+esc(w)+'</span>';}).join("")+'</div>';
+ var bySite=sites.map(function(s){var items=mine.filter(function(e){return e.site===s;}).sort(function(a,b){return WORK_AREAS.indexOf(a.workArea)-WORK_AREAS.indexOf(b.workArea);});
+   return '<div style="display:flex;gap:12px;padding:10px 2px;border-bottom:1px solid var(--stroke-2)"><div style="width:150px;flex-shrink:0"><div style="font-weight:600">'+esc(s)+'</div><div style="color:var(--text-3);font-size:12px">'+esc(SITE_NAMES[s])+'</div></div><div style="display:flex;flex-wrap:wrap;gap:6px">'+items.map(function(e){return '<span style="display:inline-flex;align-items:center;gap:5px"><span style="color:var(--text-2);font-size:12px">'+esc(e.workArea)+'</span>'+stageChip(e.stage,true)+'</span>';}).join("")+'</div></div>';
+ }).join("");
+ var deploy=mine.map(function(e){return engRow(e,"init");}).join("");
+ return '<div class="col">'+section("Engagement footprint","engagements",foot)+section("Where it has reached — status by site","grid",'<div class="bodypad">'+bySite+'</div>',true)+section("Deployment plan","roadmap",'<div class="bodypad">'+deploy+'</div>',true)+'</div>';
+}
+
+function viewDetail(){
+ var p=projById(state.projectId);
+ if(!p)return emptyState("search","Project not found","Use the Projects page to pick an initiative.");
+ var ms=DATA.milestones.filter(function(m){return m.projectId===p.id;}).sort(function(a,b){return parseISO(a.date)-parseISO(b.date);});
+ var ups=DATA.updates.filter(function(u){return u.projectId===p.id;}).sort(function(a,b){return parseISO(b.date)-parseISO(a.date);});
+ var engs=engForInit(p.id), sites=sitesForInit(p.id), latest=ups[0];
+ var s0=parseISO(p.startDate),e0=parseISO(p.endDate),prog=e0>s0?Math.max(0,Math.min(1,(TODAY-s0)/(e0-s0))):0;
+ var tab=state.detailTab;
+ var html='<div class="back" data-act="nav" data-view="projects"><span style="display:inline-flex;transform:rotate(180deg)">'+ic("search",1)+'</span>‹ Back to projects</div>';
+ html='<div class="back" data-act="nav" data-view="projects">‹ Back to projects</div>';
+ html+='<div class="page-head"><div><h1 class="page-title">'+esc(p.title)+'</h1><div class="ch" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center">'+statusBadge(p.status)+stageBadgeProj(p.stage)+'<span class="badge tint">'+esc(p.portfolio)+'</span><span class="cd" style="color:var(--text-3);font-variant-numeric:tabular-nums">'+esc(p.projectCode)+'</span></div></div><div class="head-actions"><button class="btn primary" data-act="nav" data-view="updates">Post update</button></div></div><div class="rule"></div>';
+ html+='<div class="grid-2"><div class="col">';
+ var ov='<div class="callout"><div class="k" style="color:var(--brand-ink)">Outcome</div><div style="font-size:15px">'+esc(p.outcomeStatement)+'</div></div>';
+ ov+='<div class="callout value"><div class="k" style="color:#2f9e8f">Business value</div><div>'+esc(p.businessValue)+'</div></div>';
+ ov+='<div style="color:var(--text-2)">'+esc(p.summary)+'</div>';
+ ov+='<div class="facts"><div class="fact"><div class="k">Owner</div><div class="v">'+avatar(p.owner,20)+esc(p.owner)+'</div></div><div class="fact"><div class="k">Sponsor</div><div class="v">'+avatar(p.sponsor,20)+esc(p.sponsor)+'</div></div><div class="fact"><div class="k">Product area</div><div class="v">'+esc(p.productArea)+'</div></div><div class="fact"><div class="k">Funding source</div><div class="v">'+esc(p.fundingSource)+'</div></div><div class="fact"><div class="k">Start</div><div class="v">'+fmtDate(p.startDate)+'</div></div><div class="fact"><div class="k">End</div><div class="v">'+fmtDate(p.endDate)+'</div></div></div>';
+ ov+='<div class="dep"><div class="k">'+ic("link",14)+' Dependencies</div><div class="chips">'+(p.dependencies.length?p.dependencies.map(function(d){var t=DATA.projects.filter(function(x){return x.title===d;})[0];return t?'<a data-act="project" data-id="'+t.id+'"><span class="badge outline">'+esc(d)+'</span></a>':'<span class="badge outline">'+esc(d)+'</span>';}).join(""):'<span class="muted" style="padding:0">None recorded</span>')+'</div></div>';
+ html+=section("Overview","projects",ov);
+ html+='<div class="tabs">'+tabBtn("milestones","Milestones ("+ms.length+")",tab,"detail")+tabBtn("engagements","Engagements ("+engs.length+")",tab,"detail")+tabBtn("updates","Update history ("+ups.length+")",tab,"detail")+'</div>';
+ if(tab==="milestones"){html+=section("Milestones","flag",'<div class="bodypad">'+(ms.length?ms.map(function(m){return '<div class="row"><span class="ico">'+ic("flag",16)+'</span><div class="bd"><div class="pri">'+esc(m.name)+'</div>'+(m.notes?'<div class="sec">'+esc(m.notes)+'</div>':"")+'</div><div class="rt"><span class="dt">'+fmtDate(m.date)+'</span>'+mileBadge(m.status)+'</div></div>';}).join(""):'<div class="muted">No milestones recorded.</div>')+'</div>',true);}
+ else if(tab==="engagements"){html+=initiativePanel(p);}
+ else{html+=section("Update history","updates",'<div class="bodypad">'+(ups.length?ups.map(function(u){var r=(u.risks&&u.risks.toLowerCase()!=="none material.")?'<div style="display:flex;gap:8px;margin-top:8px;color:var(--text-2)"><span style="color:#b8690b;flex-shrink:0">'+ic("warning",16)+'</span><span><strong>Risk:</strong> '+esc(u.risks)+'</span></div>':"";var dec=(u.decisionsRequired&&u.decisionsRequired.toLowerCase()!=="none this period.")?'<div style="display:flex;gap:8px;margin-top:8px;color:var(--text-2)"><span style="color:var(--brand-ink);flex-shrink:0">'+ic("check",16)+'</span><span><strong>Decision required:</strong> '+esc(u.decisionsRequired)+'</span></div>':"";return '<div style="padding:14px 0;border-bottom:1px solid var(--stroke-2)"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><strong>'+fmtDate(u.date)+'</strong><span style="color:var(--text-3);font-size:13px">'+esc(u.submittedBy)+'</span></div><div style="color:var(--text-2)">'+esc(u.summary)+'</div>'+r+dec+'</div>';}).join(""):'<div class="muted">No updates yet.</div>')+'</div>',true);}
+ html+='</div><div class="col">';
+ html+=section("Timeline","calendar",'<div style="display:flex;justify-content:space-between;margin-bottom:8px;color:var(--text-3);font-size:13px"><span>'+fmtDate(p.startDate)+'</span><span>'+fmtDate(p.endDate)+'</span></div><div class="progress"><div style="width:'+(prog*100)+'%"></div></div><div style="color:var(--text-3);font-size:13px;margin-top:8px">'+Math.round(prog*100)+'% of planned timeline elapsed</div>');
+ if(latest)html+=section("Latest update","updates",'<div style="color:var(--text-3);font-size:13px">'+fmtDate(latest.date)+' · '+esc(latest.submittedBy)+'</div><div style="color:var(--text-2);margin-top:6px">'+esc(latest.summary)+'</div>');
+ html+=section("Sites engaged ("+sites.length+")","sites",sites.length?'<div class="chips">'+sites.map(function(s){return '<a data-act="site" data-id="'+esc(s)+'"><span class="badge tint">'+esc(s)+'</span></a>';}).join("")+'</div>':'<div class="muted" style="padding:0">No sites engaged yet.</div>');
+ html+='</div></div>';
+ return html;
+}
+function tabBtn(v,label,cur,group){return '<div class="tab'+(v===cur?" active":"")+'" data-act="tab" data-group="'+group+'" data-tab="'+v+'">'+esc(label)+'</div>';}
+
+function viewEngagements(){
+ var f=state.eng, filtered=applyEngFilters(f);
+ var withEng={};DATA.engagements.forEach(function(e){withEng[e.initiativeId]=1;});
+ var initOpts=DATA.projects.filter(function(p){return withEng[p.id];}).map(function(p){return{value:p.id,label:p.title};}).sort(function(a,b){return a.label.localeCompare(b.label);});
+ var portfolios=uniq(DATA.engagements.map(function(e){return e.portfolio;})).sort();
+ var any=f.initiativeId||f.site||f.portfolio||f.workArea||f.status||f.stage;
+ var html=pageHead("Engagement Hub","Engagements","Where Frontline Digital is engaging — by site, work area, team and stage.", any?'<button class="btn" data-act="clear" data-group="eng">Clear filters</button>':"");
+ html+='<div class="stat-grid">'+stat("Engagements",filtered.length,"","#2f5e9e")+stat("Sites engaged",activeSites(filtered).length,"","#2f9e8f")+stat("Work areas",activeWAs(filtered).length,"","#5f76b5")+stat("Active now",filtered.filter(function(e){return e.status==="Active";}).length,"","#3d8a4f")+'</div>';
+ html+='<div class="filters">'+sel({label:"Initiative",group:"eng",key:"initiativeId"},f.initiativeId,initOpts,"All initiatives")+sel({label:"Site",group:"eng",key:"site"},f.site,activeSites(DATA.engagements),"All sites")+sel({label:"Portfolio",group:"eng",key:"portfolio"},f.portfolio,portfolios,"All portfolios")+sel({label:"Work area",group:"eng",key:"workArea"},f.workArea,activeWAs(DATA.engagements),"All work areas")+sel({label:"Status",group:"eng",key:"status"},f.status,ENG_STATUS,"All statuses")+sel({label:"Stage",group:"eng",key:"stage"},f.stage,ENG_STAGES,"All stages")+'<div class="spacer"></div><div class="count">'+filtered.length+' engagement'+(filtered.length===1?"":"s")+'</div></div>';
+ html+='<div class="tabs">'+tabBtn("matrix","Matrix",state.engTab,"eng")+tabBtn("heatmap","Heatmap",state.engTab,"eng")+tabBtn("initiative","By initiative",state.engTab,"eng")+'</div>';
+ if(state.engTab==="matrix"){html+= filtered.length?matrix(filtered)+stageLegend():emptyState("filter","No engagements match these filters","");}
+ else if(state.engTab==="heatmap"){html+= filtered.length?heatmap(filtered):emptyState("filter","No engagements match these filters","");}
+ else{var pid=f.initiativeId;if(pid){html+=initiativePanel(projById(pid));}else{html+='<div style="color:var(--text-3);margin-bottom:12px">Pick an initiative to see where it has reached across sites and teams.</div><div class="chips">'+initOpts.map(function(o){return '<button class="btn" data-act="pickinit" data-id="'+o.value+'">'+esc(o.label)+'</button>';}).join("")+'</div>';}}
+ return html;
+}
+function matrix(es){
+ var mx=buildMatrix(es);
+ var h='<div class="surface mx-scroll"><div class="mx"><div class="corner">Work Area</div>'+SITES.map(function(s){return '<div class="ch" data-act="site" data-id="'+esc(s)+'" title="'+esc(SITE_NAMES[s])+'">'+esc(s)+'</div>';}).join("");
+ WORK_AREAS.forEach(function(w){h+='<div class="rh">'+esc(w)+'</div>'+SITES.map(function(s){var items=(mx[cellKey(w,s)]||[]).slice().sort(function(a,b){return ENG_STAGES.indexOf(b.stage)-ENG_STAGES.indexOf(a.stage);});return '<div class="cell">'+items.map(function(e){var p=projById(e.initiativeId);return '<a class="chip sm" data-act="project" data-id="'+e.initiativeId+'" style="background:'+STAGE_COLORS[e.stage]+'" title="'+esc((p?p.title:e.initiativeId)+" · "+e.stage+" · "+e.status)+'">'+esc(p?p.abbrev:"?")+'</a>';}).join("")+'</div>';}).join("");});
+ h+='</div></div>';
+ return h;
+}
+function heatmap(es){
+ var mx=buildMatrix(es), counts={}, max=1;
+ WORK_AREAS.forEach(function(w){SITES.forEach(function(s){var items=mx[cellKey(w,s)]||[];var inits={};items.forEach(function(e){inits[e.initiativeId]=1;});var n=Object.keys(inits).length;counts[cellKey(w,s)]=n;if(n>max)max=n;});});
+ var h='<div class="surface mx-scroll"><div class="mx"><div class="corner">Work Area</div>'+SITES.map(function(s){return '<div class="ch" data-act="site" data-id="'+esc(s)+'" title="'+esc(SITE_NAMES[s])+'">'+esc(s)+'</div>';}).join("");
+ WORK_AREAS.forEach(function(w){h+='<div class="rh">'+esc(w)+'</div>'+SITES.map(function(s){var n=counts[cellKey(w,s)]||0;var a=n===0?0:(0.16+0.84*(n/max));var sel=state.heatSel===cellKey(w,s);return '<div class="hcell'+(sel?" sel":"")+'" '+(n>0?'data-act="heat" data-cell="'+esc(cellKey(w,s))+'"':"")+' style="background:'+(n===0?"transparent":"rgba(47,94,158,"+a+")")+';color:'+(a>0.55?"#fff":"var(--text-2)")+'">'+(n>0?n:"")+'</div>';}).join("");});
+ h+='</div></div>';
+ if(state.heatSel){var parts=state.heatSel.split("||"),items=(mx[state.heatSel]||[]).slice().sort(function(a,b){return ENG_STAGES.indexOf(b.stage)-ENG_STAGES.indexOf(a.stage);});
+  if(items.length){h+='<div class="surface drill"><div style="font-weight:600;font-size:15px">'+esc(parts[0])+' · '+esc(parts[1])+' <span class="muted" style="padding:0">('+esc(SITE_NAMES[parts[1]])+')</span></div><div style="margin-top:8px">'+items.map(function(e){return '<a class="row click" data-act="project" data-id="'+e.initiativeId+'"><div class="bd"><div class="pri">'+esc(titleOf(e.initiativeId))+'</div><div class="sec">'+esc(e.team+" · "+e.purpose)+'</div></div><div class="rt">'+stageChip(e.stage,true)+'<span class="dt">'+fmtDate(e.startDate)+'</span></div></a>';}).join("")+'</div></div>';}
+ } else { h+='<div class="tip">Tip: click a cell to see the initiatives engaging that work area and site.</div>'; }
+ return h;
+}
+
+function viewSites(){
+ var sites=activeSites(DATA.engagements);
+ if(sites.indexOf(state.site)<0)state.site=sites[0];
+ var sel0=state.site, se=engForSite(sel0);
+ var up=se.filter(function(e){return parseISO(e.startDate)>=TODAY&&e.status!=="Complete";});
+ var was=uniq(se.map(function(e){return e.workArea;}));
+ var initIds=uniq(se.map(function(e){return e.initiativeId;}));
+ var inits=initIds.map(function(id){var items=se.filter(function(e){return e.initiativeId===id;});return {id:id,title:titleOf(id),stage:furthest(items),areas:uniq(items.map(function(e){return e.workArea;})).length};}).sort(function(a,b){return a.title.localeCompare(b.title);});
+ var html=pageHead("Sites","What's happening at each site","Pick a site to see the initiatives, teams and engagement activity in one place.","");
+ html+='<div class="grid-site">'+section("Sites ("+sites.length+")","sites",'<div style="padding:8px">'+sites.map(function(s){return '<button class="site-btn'+(s===sel0?" active":"")+'" data-act="selsite" data-id="'+esc(s)+'"><span><span class="nm">'+esc(s)+'</span><br><span class="sub">'+esc(SITE_NAMES[s])+'</span></span><span class="site-pill">'+DATA.engagements.filter(function(e){return e.site===s;}).length+'</span></button>';}).join("")+'</div>',true);
+ var right='<div class="col"><div style="display:flex;align-items:center;gap:10px">'+ic("location",22)+'<span style="font-size:22px;font-weight:700">'+esc(sel0)+'</span><span style="color:var(--text-3);font-size:16px">'+esc(SITE_NAMES[sel0])+'</span></div>';
+ right+='<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:0">'+stat("Initiatives",inits.length,"","#2f5e9e")+stat("Work areas / teams",was.length,"","#5f76b5")+stat("Engagements",se.length,"","#2f9e8f")+stat("Upcoming",up.length,"","#c2902a")+'</div>';
+ right+=section("Active initiatives ("+inits.length+")","projects",'<div class="bodypad">'+(inits.length?inits.map(function(it){return '<a class="row click" data-act="project" data-id="'+it.id+'"><div class="bd"><div class="pri">'+esc(it.title)+'</div><div class="sec">Engaged across '+it.areas+' work area'+(it.areas===1?"":"s")+'</div></div><div class="rt">'+(it.stage?stageChip(it.stage,true):"")+'</div></a>';}).join(""):'<div class="muted">No initiatives engaging this site.</div>')+'</div>',true);
+ right+=section("Impacted teams & work areas","team",was.length?'<div class="chips">'+was.map(function(w){return '<span class="badge tint">'+esc(w)+' Team</span>';}).join("")+'</div>':'<div class="muted" style="padding:0">No teams engaged yet.</div>');
+ right+=section("Upcoming engagements ("+up.length+")","calendar",'<div class="bodypad">'+(up.length?up.map(function(e){return engRow(e,"site");}).join(""):'<div class="muted">No upcoming engagements at this site.</div>')+'</div>',true);
+ right+=section("Engagement timeline ("+se.length+")","clock",'<div class="bodypad">'+(se.length?se.map(function(e){return engRow(e,"site");}).join(""):'<div class="muted">No engagement activity.</div>')+'</div>',true);
+ right+='</div>';
+ html+=right+'</div>';
+ return html;
+}
+
+function viewUpdates(){
+ var projects=DATA.projects.slice().sort(function(a,b){return a.title.localeCompare(b.title);});
+ var titles={project:"Submit a project update",milestone:"Add or update a milestone",engagement:"Log a site engagement"};
+ var html=pageHead("Updates","Update the hub","Keep initiatives and engagements current — these forms write straight to the hub for you.","");
+ html+='<div style="color:var(--text-3);max-width:640px;margin-bottom:16px">You never touch a list. A project update refreshes the initiative record and adds a history entry; milestones and engagements appear instantly across the roadmap, matrix and site views.</div>';
+ html+='<div class="tabs">'+tabBtn("project","Project update",state.updTab,"upd")+tabBtn("milestone","Milestone",state.updTab,"upd")+tabBtn("engagement","Site engagement",state.updTab,"upd")+'</div>';
+ var body;
+ if(state.flash){body='<div class="success">'+ic("check",20)+'<div style="flex:1"><strong>Saved</strong><div style="color:var(--text-2)">'+esc(state.flash)+'</div></div><button class="btn" data-act="another">Post another</button></div>';}
+ else if(state.updTab==="project"){body=formProject(projects);}
+ else if(state.updTab==="milestone"){body=formMilestone(projects);}
+ else{body=formEngagement(projects);}
+ html+='<div style="max-width:720px">'+section(titles[state.updTab],"updates",body)+'</div>';
+ return html;
+}
+function optList(arr){return arr.map(function(o){var v=o.value!=null?o.value:o,l=o.label!=null?o.label:o;return '<option value="'+esc(v)+'">'+esc(l)+'</option>';}).join("");}
+function projOpts(projects){return '<option value="">Select an initiative</option>'+optList(projects.map(function(p){return{value:p.id,label:p.title};}));}
+function formProject(projects){
+ return '<div class="form"><div class="field"><label>Initiative *</label><select id="f_proj">'+projOpts(projects)+'</select></div>'+
+ '<div class="row2"><div class="field"><label>Update date *</label><input type="date" id="f_date" value="'+todayISO()+'"></div><div class="field"><label>Submitted by *</label><input type="text" id="f_by" placeholder="Your name"></div></div>'+
+ '<div class="field"><label>Update summary *</label><textarea id="f_sum" placeholder="Progress, achievements, what\'s next…"></textarea></div>'+
+ '<div class="field"><label>Risks</label><textarea id="f_risk" placeholder="Any risks or blockers"></textarea></div>'+
+ '<div class="field"><label>Decisions required</label><textarea id="f_dec" placeholder="Anything needing a decision"></textarea></div>'+
+ '<div class="row2"><div class="field"><label>Change status (optional)</label><select id="f_status"><option value="">No change</option>'+optList(STATUSES)+'</select></div><div class="field"><label>Change stage (optional)</label><select id="f_stage"><option value="">No change</option>'+optList(Object.keys(STAGE_ORDER))+'</select></div></div>'+
+ '<div><button class="btn primary" data-act="submit" data-kind="project">Save update</button></div></div>';
+}
+function formMilestone(projects){
+ return '<div class="form"><div class="field"><label>Initiative *</label><select id="f_proj">'+projOpts(projects)+'</select></div>'+
+ '<div class="field"><label>Milestone name *</label><input type="text" id="f_name" placeholder="e.g. Pilot go-live"></div>'+
+ '<div class="row2"><div class="field"><label>Milestone date *</label><input type="date" id="f_date" value="'+todayISO()+'"></div><div class="field"><label>Status *</label><select id="f_status"><option value="">Select status</option>'+optList(["Planned","On Track","At Risk","Delayed","Complete"])+'</select></div></div>'+
+ '<div class="field"><label>Notes</label><textarea id="f_notes" placeholder="Optional context"></textarea></div>'+
+ '<div><button class="btn primary" data-act="submit" data-kind="milestone">Save milestone</button></div></div>';
+}
+function formEngagement(projects){
+ return '<div class="form"><div class="field"><label>Initiative *</label><select id="f_proj">'+projOpts(projects)+'</select></div>'+
+ '<div class="row2"><div class="field"><label>Site *</label><select id="f_site"><option value="">Select a site</option>'+optList(SITES)+'</select></div><div class="field"><label>Work area *</label><select id="f_wa"><option value="">Select a work area</option>'+optList(WORK_AREAS)+'</select></div></div>'+
+ '<div class="row2"><div class="field"><label>Engagement stage *</label><select id="f_stage"><option value="">Select stage</option>'+optList(ENG_STAGES)+'</select></div><div class="field"><label>Status *</label><select id="f_status"><option value="">Select status</option>'+optList(ENG_STATUS)+'</select></div></div>'+
+ '<div class="row2"><div class="field"><label>Start date *</label><input type="date" id="f_start" value="'+todayISO()+'"></div><div class="field"><label>End date *</label><input type="date" id="f_end" value="'+todayISO()+'"></div></div>'+
+ '<div class="field"><label>Team</label><input type="text" id="f_team" placeholder="Defaults to the work area team"></div>'+
+ '<div class="field"><label>Engagement purpose</label><textarea id="f_purpose" placeholder="Why the engagement is happening"></textarea></div>'+
+ '<div><button class="btn primary" data-act="submit" data-kind="engagement">Save engagement</button></div></div>';
+}
+
+// ----------------------------- render + events -----------------------------
+var VIEWS={home:viewHome,roadmap:viewRoadmap,projects:viewProjects,detail:viewDetail,engagements:viewEngagements,sites:viewSites,updates:viewUpdates};
+function navFor(view){return view==="detail"?"projects":view;}
+function render(){
+ var el=document.getElementById("view");
+ el.innerHTML=(VIEWS[state.view]||viewHome)();
+ var active=navFor(state.view);
+ var items=document.querySelectorAll(".nav-item");
+ for(var i=0;i<items.length;i++){items[i].classList.toggle("active",items[i].getAttribute("data-view")===active);}
+ document.querySelector(".main").scrollTop=0;
+}
+function val(id){var e=document.getElementById(id);return e?e.value:"";}
+
+document.addEventListener("click",function(ev){
+ var t=ev.target.closest("[data-act]"); if(!t)return;
+ var act=t.getAttribute("data-act");
+ if(act==="nav"){state.view=t.getAttribute("data-view");state.heatSel="";render();}
+ else if(act==="project"){state.projectId=t.getAttribute("data-id");state.detailTab="milestones";state.view="detail";render();}
+ else if(act==="site"||act==="selsite"){state.site=t.getAttribute("data-id");state.view="sites";render();}
+ else if(act==="tab"){var g=t.getAttribute("data-group"),v=t.getAttribute("data-tab");if(g==="detail")state.detailTab=v;else if(g==="eng"){state.engTab=v;state.heatSel="";}else if(g==="upd"){state.updTab=v;state.flash="";}render();}
+ else if(act==="heat"){state.heatSel=(state.heatSel===t.getAttribute("data-cell"))?"":t.getAttribute("data-cell");render();}
+ else if(act==="pickinit"){state.eng.initiativeId=t.getAttribute("data-id");render();}
+ else if(act==="clear"){var grp=t.getAttribute("data-group");if(grp==="rm")state.rm={portfolio:"",site:"",workArea:"",stage:""};else if(grp==="eng"){state.eng={initiativeId:"",site:"",portfolio:"",workArea:"",status:"",stage:""};state.heatSel="";}render();}
+ else if(act==="another"){state.flash="";render();}
+ else if(act==="submit"){submitForm(t.getAttribute("data-kind"));}
+});
+document.addEventListener("change",function(ev){
+ var t=ev.target;
+ if(t.hasAttribute&&t.hasAttribute("data-fgroup")){var g=t.getAttribute("data-fgroup"),k=t.getAttribute("data-fkey");state[g][k]=t.value;if(g==="eng")state.heatSel="";render();}
+});
+document.addEventListener("input",function(ev){
+ var t=ev.target;
+ if(t.hasAttribute&&t.hasAttribute("data-search")){state.pf.q=t.value;var pos=t.selectionStart;render();var ne=document.querySelector('[data-search="pf"]');if(ne){ne.focus();try{ne.setSelectionRange(pos,pos);}catch(e){}}}
+});
+
+var idc=2000;
+function submitForm(kind){
+ var pid=val("f_proj"); if(!pid){alert("Please choose an initiative.");return;}
+ if(kind==="project"){
+   var sum=val("f_sum").trim(), by=val("f_by").trim(); if(!sum||!by){alert("Summary and submitted-by are required.");return;}
+   var u={id:"u-"+(++idc),projectId:pid,date:val("f_date"),summary:sum,risks:val("f_risk").trim()||"None this period.",decisionsRequired:val("f_dec").trim()||"None this period.",submittedBy:by};
+   DATA.updates.unshift(u);
+   var p=projById(pid);p.lastUpdate=sum;p.lastUpdated=val("f_date");var ns=val("f_status"),ng=val("f_stage");if(ns)p.status=ns;if(ng)p.stage=ng;
+   state.flash="Update added to "+p.title+" and its record refreshed"+(ns?" · status now "+ns:"")+".";
+ } else if(kind==="milestone"){
+   var nm=val("f_name").trim(), st=val("f_status"); if(!nm||!st){alert("Name and status are required.");return;}
+   DATA.milestones.push({id:"m-"+(++idc),projectId:pid,name:nm,date:val("f_date"),status:st,notes:val("f_notes").trim()});
+   state.flash='Milestone "'+nm+'" added.';
+ } else {
+   var site=val("f_site"),wa=val("f_wa"),stg=val("f_stage"),est=val("f_status"); if(!site||!wa||!stg||!est){alert("Site, work area, stage and status are required.");return;}
+   var pp=projById(pid);
+   DATA.engagements.push({id:"g-"+(++idc),initiativeId:pid,portfolio:pp.portfolio,site:site,workArea:wa,team:val("f_team").trim()||(wa+" Team"),stage:stg,status:est,startDate:val("f_start"),endDate:val("f_end"),purpose:val("f_purpose").trim(),notes:""});
+   state.flash="Engagement for "+wa+" at "+site+" ("+stg+") added.";
+ }
+ render();
+}
+
+render();
+
+</script>
+</body>
+</html>

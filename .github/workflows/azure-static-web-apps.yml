@@ -1,0 +1,47 @@
+# Builds the Vite app and deploys to Azure Static Web Apps on every push to main.
+# NOTE: When you connect the repo to a Static Web App in the Azure Portal, Azure
+# usually generates a workflow like this automatically AND adds the deployment-token
+# secret. If it did, you can delete this file. If you want to control it yourself,
+# keep this and add the secret named below under GitHub → Settings → Secrets → Actions.
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+jobs:
+  build_and_deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Build And Deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"          # app source is at the repo root
+          output_location: "dist"    # Vite build output
+          # build command is inferred (npm install && npm run build); to force the
+          # tsc-independent build, set app_build_command below:
+          # app_build_command: "npm run build:app"
+        env:
+          VITE_USE_API: "true"       # use the live REST API in the deployed build
+
+  close_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"

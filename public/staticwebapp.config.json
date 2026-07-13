@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/staticwebapp.config.json",
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "*.{css,js,json,png,jpg,jpeg,gif,svg,ico,webp,woff,woff2,ttf,map}"
+    ]
+  },
+  "responseOverrides": {
+    "404": { "rewrite": "/index.html", "statusCode": 200 }
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  }
+}

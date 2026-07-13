@@ -1,0 +1,36 @@
+/* Minimal global reset. All component styling uses Fluent UI tokens + makeStyles (Griffel).
+   Keep this file intentionally small so the Fluent theme owns the look and feel. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Surface neutral comes from the Fluent theme; this is a pre-paint fallback. */
+  background-color: #f5f5f5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+/* Roadmap timeline relies on a horizontal scroll container on small screens. */
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 6px;
+}

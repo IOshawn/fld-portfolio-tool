@@ -1,0 +1,50 @@
+[
+  { "id": "m-tv-1", "projectId": "trueview", "name": "Sensor coverage 50%", "date": "2026-04-30", "status": "Complete", "notes": "Conveyor drives and gearboxes instrumented at first hub." },
+  { "id": "m-tv-2", "projectId": "trueview", "name": "Health view live for reliability crews", "date": "2026-08-14", "status": "On Track", "notes": "Single condition view replacing three spreadsheets." },
+  { "id": "m-tv-3", "projectId": "trueview", "name": "Full processing rollout", "date": "2027-03-31", "status": "Planned", "notes": "All four processing hubs covered." },
+
+  { "id": "m-hh-1", "projectId": "hydrohaul", "name": "Dewatering model validated", "date": "2026-05-22", "status": "Complete", "notes": "Pit dewatering forecast accepted by hydrogeology." },
+  { "id": "m-hh-2", "projectId": "hydrohaul", "name": "Fleet telemetry integration", "date": "2026-07-15", "status": "At Risk", "notes": "Blocked on vendor API; revised date under review." },
+  { "id": "m-hh-3", "projectId": "hydrohaul", "name": "Haulage scheduler beta", "date": "2026-11-20", "status": "Planned", "notes": "First scheduling run for water carts." },
+
+  { "id": "m-ic-1", "projectId": "cadence", "name": "Paraburdoo pilot start", "date": "2026-05-04", "status": "Complete", "notes": "Cadence boards live for two crews." },
+  { "id": "m-ic-2", "projectId": "cadence", "name": "Adherence review gate", "date": "2026-07-31", "status": "On Track", "notes": "Decision gate on wider rollout." },
+  { "id": "m-ic-3", "projectId": "cadence", "name": "Second site onboarding", "date": "2026-10-12", "status": "Planned", "notes": "Tom Price targeted for next wave." },
+
+  { "id": "m-fa-1", "projectId": "frontline-ai", "name": "Use-case shortlist signed off", "date": "2026-07-04", "status": "On Track", "notes": "Four use cases prioritised with supervisors." },
+  { "id": "m-fa-2", "projectId": "frontline-ai", "name": "Prototype demo", "date": "2026-09-30", "status": "Planned", "notes": "Natural-language insight demo for steering group." },
+
+  { "id": "m-db-1", "projectId": "digby", "name": "Design baseline", "date": "2026-06-30", "status": "At Risk", "notes": "Train-ordering scope risk to be resolved before sign-off." },
+  { "id": "m-db-2", "projectId": "digby", "name": "Build start", "date": "2026-09-07", "status": "Planned", "notes": "Dependent on design baseline." },
+  { "id": "m-db-3", "projectId": "digby", "name": "Load-out assist pilot", "date": "2027-06-15", "status": "Planned", "notes": "First operator-assist pilot." },
+
+  { "id": "m-rsm-1", "projectId": "rsm-work-mgmt", "name": "Standard published", "date": "2026-01-30", "status": "Complete", "notes": "Work-management standard endorsed." },
+  { "id": "m-rsm-2", "projectId": "rsm-work-mgmt", "name": "Tooling build complete", "date": "2026-06-30", "status": "Delayed", "notes": "Slipped six weeks after resource loss." },
+  { "id": "m-rsm-3", "projectId": "rsm-work-mgmt", "name": "First site go-live", "date": "2026-10-26", "status": "At Risk", "notes": "Dependent on recovered build milestone." },
+
+  { "id": "m-pm-1", "projectId": "paperless-maintainer", "name": "West Angelas pilot live", "date": "2026-05-12", "status": "Complete", "notes": "Mobile forms in use at the workface." },
+  { "id": "m-pm-2", "projectId": "paperless-maintainer", "name": "Pilot evaluation", "date": "2026-08-28", "status": "On Track", "notes": "Decision on multi-site rollout." },
+  { "id": "m-pm-3", "projectId": "paperless-maintainer", "name": "Second site go-live", "date": "2026-12-07", "status": "Planned", "notes": "Brockman 4 targeted." },
+
+  { "id": "m-sh-1", "projectId": "shift-handover", "name": "Six crews onboarded", "date": "2026-03-20", "status": "Complete", "notes": "Handover live across processing crews." },
+  { "id": "m-sh-2", "projectId": "shift-handover", "name": "Adoption 80%", "date": "2026-07-18", "status": "On Track", "notes": "Tracking ahead of adoption target." },
+  { "id": "m-sh-3", "projectId": "shift-handover", "name": "Mining crews rollout", "date": "2026-11-30", "status": "Planned", "notes": "Extend to mining operations." },
+
+  { "id": "m-si-1", "projectId": "safety-intel", "name": "Data model complete", "date": "2026-05-30", "status": "Complete", "notes": "Unified safety risk model agreed." },
+  { "id": "m-si-2", "projectId": "safety-intel", "name": "Three sources integrated", "date": "2026-08-09", "status": "At Risk", "notes": "Two of five integrated; HSEC source pending access." },
+  { "id": "m-si-3", "projectId": "safety-intel", "name": "Ranked risk view beta", "date": "2027-02-26", "status": "Planned", "notes": "First ranked view for HSEC leads." },
+
+  { "id": "m-crd-1", "projectId": "control-room-digital", "name": "Q2 platform patching", "date": "2026-06-16", "status": "Complete", "notes": "Quarterly patch cycle complete." },
+  { "id": "m-crd-2", "projectId": "control-room-digital", "name": "Q3 platform patching", "date": "2026-09-15", "status": "Planned", "notes": "Next quarterly cycle." },
+  { "id": "m-crd-3", "projectId": "control-room-digital", "name": "Resilience uplift", "date": "2027-01-29", "status": "Planned", "notes": "Failover hardening for load-out systems." },
+
+  { "id": "m-dpi-1", "projectId": "dpi", "name": "Production pilot live (5 sites)", "date": "2026-05-15", "status": "Complete", "notes": "Daily insights in use by Production crews." },
+  { "id": "m-dpi-2", "projectId": "dpi", "name": "Drill & Blast pilot review", "date": "2026-08-07", "status": "On Track", "notes": "Decision gate on wider Drill & Blast rollout." },
+  { "id": "m-dpi-3", "projectId": "dpi", "name": "Scale decision", "date": "2026-11-19", "status": "Planned", "notes": "Move from pilot to scale across mining work areas." },
+
+  { "id": "m-dwm-1", "projectId": "dwm", "name": "Design baseline (Hope Downs 1)", "date": "2026-07-24", "status": "On Track", "notes": "OE/BI and Production design sign-off." },
+  { "id": "m-dwm-2", "projectId": "dwm", "name": "Build start", "date": "2026-10-05", "status": "Planned", "notes": "Dependent on design baseline." },
+
+  { "id": "m-eper-1", "projectId": "epermitting", "name": "Discovery complete", "date": "2026-08-31", "status": "On Track", "notes": "Permit-to-work pain points and first sites scoped." },
+  { "id": "m-eper-2", "projectId": "epermitting", "name": "Design start", "date": "2026-10-19", "status": "Planned", "notes": "Digital permit workflow design." }
+]
