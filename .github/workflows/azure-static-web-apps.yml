@@ -30,9 +30,7 @@ jobs:
           app_location: "/"          # app source is at the repo root
           api_location: ""           # leave blank so Azure does not treat this as a Function app
           output_location: "dist"    # Vite build output
-          # build command is inferred (npm install && npm run build); to force the
-          # tsc-independent build, set app_build_command below:
-          # app_build_command: "npm run build:app"
+          app_build_command: "npm run build:app"
         # After the Azure SQL database is linked, uncomment the block below to
         # switch the deployed build from mock data to the live REST API.
         # env:
