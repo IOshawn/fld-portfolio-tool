@@ -1,5 +1,11 @@
 # Deploy to Azure: Static Web App (from GitHub) + Azure SQL database
 
+> **Current status (July 2026):** Azure Static Web Apps **Database Connections** is no longer
+> available in this environment, so the portal may not show a **Database connection** setting and
+> `/data-api/rest/...` will not work unless you replace it with a supported API layer. The production
+> workflow currently builds against the mock repository so the app remains usable while a real Azure
+> Functions/App Service API is added for SQL persistence.
+
 The **best method** for this app now that you have a resource group + GitHub:
 
 ```
