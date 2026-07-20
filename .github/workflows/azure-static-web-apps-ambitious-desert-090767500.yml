@@ -50,6 +50,7 @@ jobs:
           app_location: "dist" # Prebuilt app content path
           api_location: "" # Api source code path - optional
           output_location: "" # Built app content directory - optional
+          data_api_location: "swa-db-connections" # Database connection config for /data-api
           skip_app_build: true
           ###### End of Repository/Build Configurations ######
 

@@ -28,13 +28,17 @@ import type {
 } from "./repository";
 
 const BASE = "/data-api/rest";
+const JSON_HEADERS = {
+  Accept: "application/json",
+  "X-MS-API-ROLE": "authenticated",
+};
 
 const dateOnly = (v: unknown): string => (v ? String(v).slice(0, 10) : "");
 const splitDeps = (v: unknown): string[] =>
   String(v ?? "").split(";").map((d) => d.trim()).filter(Boolean);
 
 async function list<T>(entity: string): Promise<T[]> {
-  const res = await fetch(`${BASE}/${entity}`, { headers: { Accept: "application/json" } });
+  const res = await fetch(`${BASE}/${entity}`, { headers: JSON_HEADERS });
   if (!res.ok) throw new Error(`GET ${entity} failed: ${res.status}`);
   const json = (await res.json()) as { value: T[] };
   return json.value ?? [];
@@ -43,7 +47,7 @@ async function list<T>(entity: string): Promise<T[]> {
 async function create<T>(entity: string, body: Record<string, unknown>): Promise<T> {
   const res = await fetch(`${BASE}/${entity}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: { ...JSON_HEADERS, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`POST ${entity} failed: ${res.status}`);
@@ -54,7 +58,7 @@ async function create<T>(entity: string, body: Record<string, unknown>): Promise
 async function patch(entity: string, id: string | number, body: Record<string, unknown>): Promise<void> {
   const res = await fetch(`${BASE}/${entity}/id/${encodeURIComponent(String(id))}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: { ...JSON_HEADERS, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`PATCH ${entity}/${id} failed: ${res.status}`);
