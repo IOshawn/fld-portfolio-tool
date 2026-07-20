@@ -10,23 +10,43 @@ const useStyles = makeStyles({
     rowGap: "12px",
     flexWrap: "wrap",
     marginBottom: "20px",
+    "@media (max-width: 640px)": {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+    },
   },
   search: {
     flexGrow: 1,
     minWidth: "220px",
     maxWidth: "360px",
+    "@media (max-width: 640px)": {
+      gridColumn: "1 / -1",
+      minWidth: "unset",
+      maxWidth: "unset",
+    },
   },
   filter: {
     minWidth: "168px",
+    "@media (max-width: 640px)": {
+      minWidth: "unset",
+      width: "100%",
+    },
   },
   spacer: {
     flexGrow: 1,
+    "@media (max-width: 640px)": {
+      display: "none",
+    },
   },
   count: {
     color: tokens.colorNeutralForeground3,
     fontSize: "13px",
     ...shorthands.padding("0", "0", "6px", "0"),
     whiteSpace: "nowrap",
+    "@media (max-width: 640px)": {
+      gridColumn: "1 / -1",
+      paddingBottom: "0",
+    },
   },
 });
 

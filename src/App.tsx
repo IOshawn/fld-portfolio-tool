@@ -1,27 +1,31 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
-import { HomePage } from "./pages/HomePage";
-import { RoadmapPage } from "./pages/RoadmapPage";
-import { ProjectsPage } from "./pages/ProjectsPage";
-import { ProjectDetailPage } from "./pages/ProjectDetailPage";
-import { EngagementsPage } from "./pages/EngagementsPage";
-import { SitesPage } from "./pages/SitesPage";
-import { UpdatesPage } from "./pages/UpdatesPage";
-import { NotFoundPage } from "./pages/NotFoundPage";
+
+const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m.HomePage })));
+const RoadmapPage = lazy(() => import("./pages/RoadmapPage").then((m) => ({ default: m.RoadmapPage })));
+const ProjectsPage = lazy(() => import("./pages/ProjectsPage").then((m) => ({ default: m.ProjectsPage })));
+const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage").then((m) => ({ default: m.ProjectDetailPage })));
+const EngagementsPage = lazy(() => import("./pages/EngagementsPage").then((m) => ({ default: m.EngagementsPage })));
+const SitesPage = lazy(() => import("./pages/SitesPage").then((m) => ({ default: m.SitesPage })));
+const UpdatesPage = lazy(() => import("./pages/UpdatesPage").then((m) => ({ default: m.UpdatesPage })));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 export default function App(): JSX.Element {
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<HomePage />} />
-        <Route path="roadmap" element={<RoadmapPage />} />
-        <Route path="projects" element={<ProjectsPage />} />
-        <Route path="projects/:projectId" element={<ProjectDetailPage />} />
-        <Route path="engagements" element={<EngagementsPage />} />
-        <Route path="sites" element={<SitesPage />} />
-        <Route path="updates" element={<UpdatesPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={null}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<HomePage />} />
+          <Route path="roadmap" element={<RoadmapPage />} />
+          <Route path="projects" element={<ProjectsPage />} />
+          <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+          <Route path="engagements" element={<EngagementsPage />} />
+          <Route path="sites" element={<SitesPage />} />
+          <Route path="updates" element={<UpdatesPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }

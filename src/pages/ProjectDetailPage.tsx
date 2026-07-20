@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -15,6 +15,8 @@ import {
   ProgressBar,
 } from "@fluentui/react-components";
 import { PortfolioGate } from "../components/PortfolioGate";
+import { ProjectEditDrawer } from "../components/ProjectEditDrawer";
+import { DependencyGraph, resolveDep } from "../components/DependencyGraph";
 import { SectionCard } from "../components/cards";
 import { EmptyState } from "../components/states";
 import { StatusBadge, StageBadge, MilestoneStatusBadge } from "../components/Badges";
@@ -125,12 +127,37 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
   const s = useStyles();
   const navigate = useNavigate();
   const [tab, setTab] = useState<string>("milestones");
+  const [editOpen, setEditOpen] = useState(false);
+  const openEdit = useCallback(() => setEditOpen(true), []);
+  const closeEdit = useCallback(() => setEditOpen(false), []);
 
   const ms = useMemo(() => milestonesFor(data.milestones, project.id), [data.milestones, project.id]);
   const ups = useMemo(() => updatesFor(data.updates, project.id), [data.updates, project.id]);
   const engs = useMemo(() => engagementsForInitiative(data.engagements, project.id), [data.engagements, project.id]);
   const sites = useMemo(() => sitesForInitiative(data.engagements, project.id), [data.engagements, project.id]);
   const latest = ups[0];
+
+  // Resolve dependency entries (ID or legacy title) to Project objects
+  const resolvedUpstreams = useMemo(
+    () =>
+      project.dependencies
+        .map((dep) => resolveDep(dep, data.projects))
+        .filter((p): p is NonNullable<typeof p> => p !== undefined),
+    [project.dependencies, data.projects]
+  );
+
+  // Check if there are any downstream dependents (projects that depend on this one)
+  const hasDownstreams = useMemo(
+    () =>
+      data.projects.some(
+        (p) =>
+          p.id !== project.id &&
+          p.dependencies.some(
+            (dep) => dep === project.id || dep.toLowerCase() === project.title.toLowerCase()
+          )
+      ),
+    [data.projects, project.id, project.title]
+  );
 
   const start = parseISO(project.startDate).getTime();
   const end = parseISO(project.endDate).getTime();
@@ -165,10 +192,17 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
             </Text>
           </div>
         </div>
-        <Button appearance="primary" onClick={() => navigate(`/updates?project=${project.id}`)}>
-          Post update
-        </Button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Button appearance="secondary" onClick={openEdit} icon={<Icon name="edit" size={16} />}>
+            Edit project
+          </Button>
+          <Button appearance="primary" onClick={() => navigate(`/updates?project=${project.id}`)}>
+            Post update
+          </Button>
+        </div>
       </div>
+
+      <ProjectEditDrawer project={project} allProjects={data.projects} open={editOpen} onClose={closeEdit} />
 
       <div className={s.divider} />
 
@@ -225,10 +259,11 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
                   </Text>
                 ) : (
                   project.dependencies.map((dep) => {
-                    const target = data.projects.find((p) => p.title === dep);
+                    const target = resolveDep(dep, data.projects);
+                    const label = target ? target.title : dep;
                     const badge = (
                       <Badge appearance="outline" color="informative" shape="rounded">
-                        {dep}
+                        {label}
                       </Badge>
                     );
                     return target ? (
@@ -380,6 +415,16 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
               </div>
             )}
           </SectionCard>
+
+          {(resolvedUpstreams.length > 0 || hasDownstreams) && (
+            <SectionCard title="Dependency graph" icon="link">
+              <DependencyGraph
+                project={project}
+                allProjects={data.projects}
+                upstreams={resolvedUpstreams}
+              />
+            </SectionCard>
+          )}
         </div>
       </div>
     </>

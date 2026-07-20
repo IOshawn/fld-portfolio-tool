@@ -5,6 +5,7 @@ import { PortfolioGate } from "../components/PortfolioGate";
 import { FilterBar, SelectFilter, ResultCount } from "../components/FilterBar";
 import { RoadmapTimeline } from "../components/RoadmapTimeline";
 import { EmptyState } from "../components/states";
+import { Icon } from "../components/Icon";
 import type { PortfolioData } from "../types/models";
 import { STATUSES } from "../types/models";
 import { distinctField, activeSites, activeWorkAreas } from "../lib/selectors";
@@ -22,6 +23,25 @@ const useStyles = makeStyles({
   },
   legendItem: { display: "flex", alignItems: "center", columnGap: "7px" },
   swatch: { width: "12px", height: "12px", ...shorthands.borderRadius("3px") },
+  scrollHint: {
+    display: "none",
+    "@media (max-width: 820px)": {
+      display: "flex",
+      alignItems: "center",
+      columnGap: "8px",
+      ...shorthands.padding("10px", "14px"),
+      ...shorthands.borderRadius("8px"),
+      backgroundColor: tokens.colorNeutralBackground2,
+      ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+      color: tokens.colorNeutralForeground2,
+      fontSize: "13px",
+      marginBottom: "12px",
+    },
+  },
+  scrollHintIcon: {
+    flexShrink: 0,
+    color: tokens.colorBrandForeground2,
+  },
 });
 
 function RoadmapContent({ data }: { data: PortfolioData }): JSX.Element {
@@ -109,6 +129,12 @@ function RoadmapContent({ data }: { data: PortfolioData }): JSX.Element {
         />
       ) : (
         <>
+          <div className={s.scrollHint}>
+            <span className={s.scrollHintIcon}>
+              <Icon name="roadmap" size={16} />
+            </span>
+            <Text size={200}>Scroll sideways to see the full 2026–2028 timeline.</Text>
+          </div>
           <RoadmapTimeline projects={filtered} />
           <div className={s.legend}>
             <Text size={200} weight="semibold">

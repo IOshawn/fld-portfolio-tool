@@ -17,7 +17,8 @@ import { STAGE_ORDER } from "../lib/theme";
 const useStyles = makeStyles({
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    // On very narrow screens (< 340px) a 300px min would overflow; clamp it.
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(300px, 100%), 1fr))",
     ...shorthands.gap("16px"),
     alignItems: "start",
   },

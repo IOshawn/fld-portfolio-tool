@@ -26,7 +26,9 @@ export type IconName =
   | "grid"
   | "team"
   | "link"
-  | "value";
+  | "value"
+  | "edit"
+  | "close";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M4 11.5 12 5l8 6.5M6 10.5V19h12v-8.5" />,
@@ -137,6 +139,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M16 6.5c-1-1-2.4-1.5-4-1.5-2.2 0-4 1-4 3s1.8 2.6 4 3 4 1 4 3-1.8 3-4 3c-1.6 0-3-.5-4-1.5" />
     </>
   ),
+  edit: (
+    <>
+      <path d="M4 20h4l10.5-10.5-4-4L4 16v4Z" />
+      <path d="m14.5 5.5 4 4" />
+    </>
+  ),
+  close: <path d="M6 6l12 12M18 6 6 18" />,
 };
 
 interface IconProps {

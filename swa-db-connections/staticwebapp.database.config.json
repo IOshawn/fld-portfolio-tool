@@ -17,22 +17,22 @@
     "Project": {
       "source": "phub.Projects",
       "rest": { "path": "/Projects" },
-      "permissions": [{ "role": "anonymous", "actions": ["read", "create", "update"] }]
+      "permissions": [{ "role": "authenticated", "actions": ["read", "create", "update"] }]
     },
     "Milestone": {
       "source": "phub.Milestones",
       "rest": { "path": "/Milestones" },
-      "permissions": [{ "role": "anonymous", "actions": ["read", "create", "update"] }]
+      "permissions": [{ "role": "authenticated", "actions": ["read", "create", "update"] }]
     },
     "Engagement": {
       "source": "phub.Engagements",
       "rest": { "path": "/Engagements" },
-      "permissions": [{ "role": "anonymous", "actions": ["read", "create", "update"] }]
+      "permissions": [{ "role": "authenticated", "actions": ["read", "create", "update"] }]
     },
     "Update": {
       "source": "phub.Updates",
       "rest": { "path": "/Updates" },
-      "permissions": [{ "role": "anonymous", "actions": ["read", "create", "update"] }]
+      "permissions": [{ "role": "authenticated", "actions": ["read", "create", "update"] }]
     }
   }
 }

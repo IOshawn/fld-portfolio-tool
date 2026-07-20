@@ -10,6 +10,12 @@ const useStyles = makeStyles({
     rowGap: "12px",
     flexWrap: "wrap",
     marginBottom: "20px",
+    "@media (max-width: 640px)": {
+      alignItems: "flex-start",
+      flexDirection: "column",
+      rowGap: "10px",
+      marginBottom: "16px",
+    },
   },
   titles: {
     display: "flex",
@@ -23,16 +29,28 @@ const useStyles = makeStyles({
     letterSpacing: "0.04em",
     textTransform: "uppercase",
   },
+  title: {
+    margin: 0,
+  },
   actions: {
     display: "flex",
     alignItems: "center",
     columnGap: "8px",
     flexWrap: "wrap",
+    "@media (max-width: 640px)": {
+      width: "100%",
+      "& > *": {
+        flexGrow: 1,
+      },
+    },
   },
   divider: {
     height: "1px",
     backgroundColor: tokens.colorNeutralStroke2,
     ...shorthands.margin("0", "0", "24px", "0"),
+    "@media (max-width: 640px)": {
+      ...shorthands.margin("0", "0", "16px", "0"),
+    },
   },
 });
 
@@ -54,8 +72,13 @@ export function PageHeader({ eyebrow, title, subtitle, actions }: PageHeaderProp
               {eyebrow}
             </Text>
           ) : null}
-          <h1 style={{ margin: 0 }}>
-            <Text size={700} weight="bold" style={{ lineHeight: 1.1 }}>
+          <h1 className={s.title}>
+            {/* size={700} on desktop, size={600} on mobile via CSS override */}
+            <Text
+              size={700}
+              weight="bold"
+              style={{ lineHeight: 1.15 }}
+            >
               {title}
             </Text>
           </h1>

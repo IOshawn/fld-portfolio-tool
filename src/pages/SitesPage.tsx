@@ -18,6 +18,7 @@ import {
 import { parseISO, today } from "../lib/format";
 
 const useStyles = makeStyles({
+  // ── Layout ────────────────────────────────────────────────────────────────
   grid: {
     display: "grid",
     gridTemplateColumns: "240px 1fr",
@@ -25,6 +26,7 @@ const useStyles = makeStyles({
     alignItems: "start",
     "@media (max-width: 880px)": { gridTemplateColumns: "1fr" },
   },
+  // ── Desktop sidebar list ──────────────────────────────────────────────────
   siteList: { display: "flex", flexDirection: "column", ...shorthands.padding("8px") },
   siteBtn: {
     display: "flex",
@@ -57,8 +59,47 @@ const useStyles = makeStyles({
     ...shorthands.borderRadius("10px"),
     flexShrink: 0,
   },
+  // ── Mobile horizontal chip strip ──────────────────────────────────────────
+  mobileStrip: {
+    display: "none",
+    "@media (max-width: 880px)": {
+      display: "flex",
+      ...shorthands.overflow("auto", "hidden"),
+      ...shorthands.gap("8px"),
+      ...shorthands.padding("4px", "0", "12px", "0"),
+      scrollbarWidth: "none",
+    },
+  },
+  mobileChip: {
+    display: "inline-flex",
+    flexDirection: "column",
+    alignItems: "center",
+    flexShrink: 0,
+    ...shorthands.padding("8px", "14px"),
+    ...shorthands.borderRadius("10px"),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorNeutralBackground1,
+    cursor: "pointer",
+    fontFamily: "inherit",
+    ":hover": { backgroundColor: tokens.colorNeutralBackground1Hover },
+  },
+  mobileChipActive: {
+    backgroundColor: tokens.colorBrandBackground2,
+    ...shorthands.border("1px", "solid", tokens.colorBrandStroke1),
+    color: tokens.colorBrandForeground2,
+    ":hover": { backgroundColor: tokens.colorBrandBackground2 },
+  },
+  mobileChipName: { fontWeight: 700, fontSize: "13px", whiteSpace: "nowrap" },
+  mobileChipCount: { fontSize: "11px", color: "inherit", opacity: 0.7, whiteSpace: "nowrap" },
+  // Hide desktop sidebar card on mobile
+  desktopSidebarCard: {
+    "@media (max-width: 880px)": {
+      display: "none",
+    },
+  },
+  // ── Detail column ─────────────────────────────────────────────────────────
   col: { display: "flex", flexDirection: "column", ...shorthands.gap("16px"), minWidth: 0 },
-  head: { display: "flex", alignItems: "center", columnGap: "10px", marginBottom: "2px" },
+  head: { display: "flex", alignItems: "center", columnGap: "10px", marginBottom: "2px", flexWrap: "wrap" },
   statRow: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
@@ -135,27 +176,47 @@ function SitesContent({ data }: { data: PortfolioData }): JSX.Element {
         subtitle="Pick a site to see the initiatives, teams and engagement activity in one place."
       />
 
+      {/* Mobile: horizontal chip strip of sites */}
+      <div className={s.mobileStrip} role="listbox" aria-label="Select a site">
+        {sites.map((site) => (
+          <button
+            key={site}
+            type="button"
+            role="option"
+            aria-selected={site === selected}
+            className={mergeClasses(s.mobileChip, site === selected && s.mobileChipActive)}
+            onClick={() => setSelected(site)}
+          >
+            <span className={s.mobileChipName}>{site}</span>
+            <span className={s.mobileChipCount}>{countFor(site)} eng</span>
+          </button>
+        ))}
+      </div>
+
       <div className={s.grid}>
-        <SectionCard title={`Sites (${sites.length})`} icon="sites" flush>
-          <div className={s.siteList}>
-            {sites.map((site) => (
-              <button
-                key={site}
-                type="button"
-                className={mergeClasses(s.siteBtn, site === selected && s.siteBtnActive)}
-                onClick={() => setSelected(site)}
-                aria-pressed={site === selected}
-              >
-                <span>
-                  <span className={s.siteBtnName}>{site}</span>
-                  <br />
-                  <span className={s.siteBtnSub}>{SITE_NAMES[site]}</span>
-                </span>
-                <span className={s.pill}>{countFor(site)}</span>
-              </button>
-            ))}
-          </div>
-        </SectionCard>
+        {/* Desktop: sidebar list inside a card */}
+        <div className={s.desktopSidebarCard}>
+          <SectionCard title={`Sites (${sites.length})`} icon="sites" flush>
+            <div className={s.siteList}>
+              {sites.map((site) => (
+                <button
+                  key={site}
+                  type="button"
+                  className={mergeClasses(s.siteBtn, site === selected && s.siteBtnActive)}
+                  onClick={() => setSelected(site)}
+                  aria-pressed={site === selected}
+                >
+                  <span>
+                    <span className={s.siteBtnName}>{site}</span>
+                    <br />
+                    <span className={s.siteBtnSub}>{SITE_NAMES[site]}</span>
+                  </span>
+                  <span className={s.pill}>{countFor(site)}</span>
+                </button>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
 
         <div className={s.col}>
           <div className={s.head}>
