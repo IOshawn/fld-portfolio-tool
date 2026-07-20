@@ -6,10 +6,9 @@
   "description": "Frontline Digital Portfolio Intelligence Hub - Phase 1 React prototype (mocked JSON). RTIO.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:app": "vite build",
+    "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.54.0",
@@ -18,6 +17,7 @@
     "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
+    "@types/node": "^26.0.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
