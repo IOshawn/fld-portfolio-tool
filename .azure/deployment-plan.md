@@ -24,7 +24,7 @@ Add an Azure Functions HTTP API backend for the Frontline Portfolio Hub so the S
 
 - `api/` Azure Functions TypeScript project. Complete.
 - Shared SQL helper for connecting with `mssql`. Complete.
-- HTTP endpoints for Projects, Milestones, Engagements, and Updates. Complete.
+- HTTP endpoints for health, Projects, Milestones, Engagements, and Updates. Complete.
 - Local settings template documenting required environment variables. Complete.
 - Documentation for local run and Azure portal setup. Complete.
 

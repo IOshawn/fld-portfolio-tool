@@ -64,6 +64,18 @@ SELECT COUNT(*) FROM phub.Updates;
 4. Add the `SQL_CONNECTION_STRING` app setting.
 5. Link the Function App to the Static Web App under **Settings -> APIs**.
 
+Required Function App settings:
+
+```text
+FUNCTIONS_EXTENSION_VERSION=~4
+FUNCTIONS_WORKER_RUNTIME=node
+SQL_CONNECTION_STRING=<your Azure SQL connection string>
+```
+
+The GitHub workflow `.github/workflows/main_fld-portfolio.yml` deploys only the `api/`
+folder. If functions fail to list in the Azure Portal, confirm the deployed package contains
+`host.json`, `package.json`, `dist/src/functions/*.js`, and `node_modules/` at the package root.
+
 For managed identity, run this in the database:
 
 ```sql
@@ -74,6 +86,7 @@ ALTER ROLE db_datawriter ADD MEMBER [<function-app-name>];
 
 ## Endpoints
 
+- `GET /api/health`
 - `GET /api/Projects`
 - `GET /api/Milestones`
 - `GET /api/Engagements`

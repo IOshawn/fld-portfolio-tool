@@ -60,21 +60,21 @@ async function patchHandler(
 }
 
 app.http("listEntities", {
-  route: "{entity:alpha}",
+  route: "{entity}",
   methods: ["GET"],
   authLevel: "anonymous",
   handler: listHandler
 });
 
 app.http("createEntity", {
-  route: "{entity:alpha}",
+  route: "{entity}",
   methods: ["POST"],
   authLevel: "anonymous",
   handler: createHandler
 });
 
 app.http("patchEntity", {
-  route: "{entity:alpha}/{id}",
+  route: "{entity}/{id}",
   methods: ["PATCH"],
   authLevel: "anonymous",
   handler: patchHandler
