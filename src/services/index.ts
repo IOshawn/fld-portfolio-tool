@@ -11,11 +11,15 @@
 import type { PortfolioRepository } from "./repository";
 import { MockRepository } from "./mockRepository";
 import { RestRepository } from "./restRepository";
+import { FunctionsRepository } from "./functionsRepository";
 
 const useApi = import.meta.env.VITE_USE_API === "true";
+const apiMode = import.meta.env.VITE_API_MODE;
 
 export const repository: PortfolioRepository = useApi
   ? new RestRepository()
+  : apiMode === "functions"
+    ? new FunctionsRepository()
   : new MockRepository();
 
 export type { PortfolioRepository } from "./repository";

@@ -6,3 +6,6 @@ dist-ssr
 .DS_Store
 *.log
 .venv/
+.npm-cache/
+*.tsbuildinfo
+api/local.settings.json
