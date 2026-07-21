@@ -69,6 +69,7 @@ Required Function App settings:
 ```text
 FUNCTIONS_EXTENSION_VERSION=~4
 FUNCTIONS_WORKER_RUNTIME=node
+AzureWebJobsStorage=<storage account connection string>
 SQL_CONNECTION_STRING=<your Azure SQL connection string>
 ```
 
