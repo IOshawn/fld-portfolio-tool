@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280" />
+    <title>Frontline Digital · Portfolio Update Q3 2026</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        background: #f0f2f5;
+      }
+
+      .slide {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        width: 1280px;
+        height: 720px;
+      }
+
+      /* ── Sidebar ── */
+      .sidebar {
+        background: #0e1f3d;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 16px;
+        position: relative;
+        overflow: hidden;
+      }
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        bottom: -60px;
+        left: -60px;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(193, 39, 45, 0.18);
+      }
+      .sidebar::after {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -60px;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #c1272d;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+      }
+      .brand-name {
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 28px;
+      }
+
+      .slide-label {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .slide-title {
+        color: #fff;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 6px;
+      }
+      .slide-period {
+        color: #c1272d;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 28px;
+      }
+
+      .sidebar-divider {
+        width: 28px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.12);
+        margin-bottom: 20px;
+      }
+
+      .sidebar-meta {
+        color: rgba(255, 255, 255, 0.35);
+        font-size: 9.5px;
+        line-height: 1.6;
+      }
+      .sidebar-meta strong {
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 600;
+      }
+
+      /* ── Main grid ── */
+      .main {
+        background: #f0f2f5;
+        padding: 12px 14px 12px 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 10px;
+      }
+
+      /* ── Area card ── */
+      .area {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .area-header {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 12px 7px;
+        border-bottom: 1px solid #f0f0f0;
+        flex-shrink: 0;
+      }
+      .area-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .area-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+      }
+
+      .area-body {
+        flex: 1;
+        padding: 4px 12px 8px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ── Sub-group ── */
+      .subgroup-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 0 3px;
+        border-bottom: 1px solid #ebebeb;
+        margin-bottom: 0;
+      }
+      .subgroup-label {
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: #888;
+        white-space: nowrap;
+      }
+      .subgroup-line {
+        flex: 1;
+        height: 1px;
+        background: #ebebeb;
+      }
+
+      /* ── Initiative row ── */
+      .initiative {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        align-items: start;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f3f3f3;
+      }
+      .initiative:last-child {
+        border-bottom: none;
+      }
+      .init-name-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding-top: 2px;
+      }
+      .init-name {
+        font-size: 10.5px;
+        font-weight: 600;
+        color: #1a1a2e;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+      }
+      .init-desc {
+        font-size: 9px;
+        color: #888;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .milestones {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: flex-start;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 7px;
+        border-radius: 99px;
+        font-size: 10px;
+        font-weight: 500;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+        white-space: nowrap;
+        line-height: 1.5;
+      }
+      .chip.muted {
+        background: #fafafa;
+        color: #999;
+        border-color: #e0e0e0;
+      }
+      .chip-date {
+        opacity: 0.6;
+        font-weight: 400;
+      }
+
+      /* accent colours */
+      .c-maint  { color: #1d4ed8; }
+      .dot-maint { background: #1d4ed8; }
+      .c-odi    { color: #7c3aed; }
+      .dot-odi  { background: #7c3aed; }
+      .c-hse    { color: #059669; }
+      .dot-hse  { background: #059669; }
+      .c-pai    { color: #b45309; }
+      .dot-pai  { background: #b45309; }
+
+      @media print {
+        body { width: 1280px; height: 720px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slide">
+
+      <!-- ── Sidebar ── -->
+      <aside class="sidebar">
+        <div class="brand-mark">FD</div>
+        <div class="brand-name">Frontline Digital</div>
+
+        <div class="slide-label">Portfolio Update</div>
+        <div class="slide-title">Q3 2026</div>
+        <div class="slide-period">July · August · September</div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-meta">
+          <strong>4 portfolio areas</strong><br />
+          July–September 2026<br /><br />
+          Milestones shown<br />
+          within quarter.<br />
+          Later dates noted<br />
+          where relevant.
+        </div>
+      </aside>
+
+      <!-- ── 2×2 card grid ── -->
+      <main class="main">
+
+        <!-- ── Frontline Maintenance ── -->
+        <div class="area">
+          <div class="area-header">
+            <span class="area-dot dot-maint"></span>
+            <span class="area-title c-maint">Frontline Maintenance</span>
+          </div>
+          <div class="area-body">
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">e-Permitting</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Yandi Test Deployment <span class="chip-date">17 Aug</span></span>
+                <span class="chip muted">HD4 &amp; Yandi Implementation <span class="chip-date">Nov/Dec</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Digital Work Management</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">GDI Concept Testing <span class="chip-date">Jul–Oct</span></span>
+                <span class="chip muted">Go/No-Go Stage Gate <span class="chip-date">Nov</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">CAT3 Labour Management</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">SteerCo Endorsement <span class="chip-date">Jul</span></span>
+                <span class="chip">Secure Funding <span class="chip-date">Aug</span></span>
+                <span class="chip muted">Start Implementation <span class="chip-date">Oct</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Rolling Stock Maintenance WM</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Phase 1 Deployment <span class="chip-date">Jul</span></span>
+                <span class="chip">RFI Evaluations for Phase 2 <span class="chip-date">Jul</span></span>
+                <span class="chip muted">Phase 2 Implementation <span class="chip-date">Q1 2027</span></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Operations & Decision Intelligence ── -->
+        <div class="area">
+          <div class="area-header">
+            <span class="area-dot dot-odi"></span>
+            <span class="area-title c-odi">Operations &amp; Decision Intelligence</span>
+          </div>
+          <div class="area-body">
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">TrueView</span></div>
+              <div class="milestones">
+                <span class="chip">BS1 Expansion Build <span class="chip-date">Aug</span></span>
+                <span class="chip">ODS Zone Feature Build <span class="chip-date">Sep</span></span>
+                <span class="chip muted">2.0 Ports Phase 1 Build <span class="chip-date">Aug–Nov</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Rostering Tool (Rail)</span></div>
+              <div class="milestones">
+                <span class="chip">Rail Harmony Migration Build <span class="chip-date">Sep</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Decision Intelligence</span></div>
+              <div class="milestones">
+                <span class="chip">Solution Workshops <span class="chip-date">Aug</span></span>
+                <span class="chip">Value Case Testing / Endorsement <span class="chip-date">Sep</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Floortour</span></div>
+              <div class="milestones">
+                <span class="chip">Current State Assessment &amp; Options Analysis <span class="chip-date">End of Q3</span></span>
+              </div>
+            </div>
+
+            <!-- Control Room Digital sub-group -->
+            <div class="subgroup-header">
+              <span class="subgroup-label">Control Room Digital</span>
+              <span class="subgroup-line"></span>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Delay Slayer</span>
+                <span class="init-desc">Assisted &amp; automated delay accounting</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Prototype UAT <span class="chip-date">Aug</span></span>
+                <span class="chip">Deployment Plan <span class="chip-date">Sep</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Alarm Rationalisation Hub</span>
+                <span class="init-desc">Alarm triage, root cause &amp; rectification</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Prototype <span class="chip-date">Sep</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Blast &amp; Block Upgrade</span></div>
+              <div class="milestones">
+                <span class="chip muted">Feasibility and Go/No-Go <span class="chip-date">Q4</span></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Frontline HSE ── -->
+        <div class="area">
+          <div class="area-header">
+            <span class="area-dot dot-hse"></span>
+            <span class="area-title c-hse">Frontline HSE</span>
+          </div>
+          <div class="area-body">
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Safety Digital Working Group</span>
+                <span class="init-desc">Coordinate, triage &amp; progress digital safety</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Coordinate, triage and progress <span class="chip-date">Late Jul</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Safety Agent</span>
+                <span class="init-desc">Safety Agent concept cases and data sources</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Concept <span class="chip-date">Sep</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">HydroChart</span>
+                <span class="init-desc">Hydrogeological data and visualisation</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Deployed to Production — Mine Water Mgmt <span class="chip-date">31 Jul</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap">
+                <span class="init-name">Drippy Water Management Assistant</span>
+                <span class="init-desc">User support with water data &amp; insights</span>
+              </div>
+              <div class="milestones">
+                <span class="chip">Phase 1 Release <span class="chip-date">Aug</span></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Frontline People & AI ── -->
+        <div class="area">
+          <div class="area-header">
+            <span class="area-dot dot-pai"></span>
+            <span class="area-title c-pai">Frontline People &amp; AI</span>
+          </div>
+          <div class="area-body">
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Shift Handover</span></div>
+              <div class="milestones">
+                <span class="chip">Pilbara Operations Production Deployment <span class="chip-date">By end of Q3</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Performance Insights</span></div>
+              <div class="milestones">
+                <span class="chip">Daily Insights to Production <span class="chip-date">28 Jul</span></span>
+                <span class="chip">Weekly Insights Prototype <span class="chip-date">29 Aug</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">Integrated Cadence Tool</span></div>
+              <div class="milestones">
+                <span class="chip">Phase 1 Site Deployment <span class="chip-date">Q3</span></span>
+              </div>
+            </div>
+
+            <div class="initiative">
+              <div class="init-name-wrap"><span class="init-name">SPS Digital Tools</span></div>
+              <div class="milestones">
+                <span class="chip">Handover and clone for RTIO <span class="chip-date">Q3</span></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </body>
+</html>

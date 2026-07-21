@@ -16,6 +16,7 @@ const NAV: { to: string; label: string; shortLabel: string; icon: IconName; end?
   { to: "/engagements", label: "Engagements", shortLabel: "Engage", icon: "engagements" },
   { to: "/sites", label: "Sites", shortLabel: "Sites", icon: "sites" },
   { to: "/updates", label: "Updates", shortLabel: "Updates", icon: "updates" },
+  { to: "/quarterly", label: "Q3 Summary", shortLabel: "Q3", icon: "quarter" },
 ];
 
 const useStyles = makeStyles({

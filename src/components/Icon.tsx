@@ -28,7 +28,8 @@ export type IconName =
   | "link"
   | "value"
   | "edit"
-  | "close";
+  | "close"
+  | "quarter";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M4 11.5 12 5l8 6.5M6 10.5V19h12v-8.5" />,
@@ -146,6 +147,15 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   close: <path d="M6 6l12 12M18 6 6 18" />,
+  quarter: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
+      <path d="M12 13h4M12 17h4" />
+      <path d="m6 13 1.5 2L6 17" />
+    </>
+  ),
 };
 
 interface IconProps {

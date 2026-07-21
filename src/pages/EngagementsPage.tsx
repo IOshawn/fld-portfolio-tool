@@ -125,9 +125,9 @@ function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
   return (
     <>
       <PageHeader
-        eyebrow="Engagement Hub"
-        title="Engagements"
-        subtitle="Where Frontline Digital is engaging — by site, work area, team and stage."
+        eyebrow="Deployments and Contact"
+        title="Site Engagements"
+        subtitle="Where Frontline Digital is deploying, visiting or engaging - by site, work area, team and project stage"
         actions={
           anyFilterActive(filters) ? (
             <Button appearance="secondary" onClick={clear}>

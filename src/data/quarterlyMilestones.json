@@ -1,0 +1,294 @@
+[
+  {
+    "id": "qm-ep-2",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "e-Permitting",
+    "milestone": "Yandi Test Deployment",
+    "targetDate": "2026-08-17",
+    "dateLabel": "17 Aug",
+    "notes": "Full test deployment of digital permit workflow at Yandicoogina."
+  },
+  {
+    "id": "qm-ep-3",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "e-Permitting",
+    "milestone": "HD4 & Yandi Implementation",
+    "targetDate": "2026-12-31",
+    "dateLabel": "Nov/Dec",
+    "notes": "Go-live at Hope Downs 4 and Yandicoogina. Planned for Nov/Dec 2026."
+  },
+
+  {
+    "id": "qm-dwm-1",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "Digital Work Management",
+    "milestone": "GDI Concept Testing",
+    "targetDate": "2026-10-31",
+    "dateLabel": "Jul–Oct",
+    "notes": "Gudai-Darri concept testing — first live site for digital work management."
+  },
+  {
+    "id": "qm-dwm-3",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "Digital Work Management",
+    "milestone": "Go/No-Go Stage Gate",
+    "targetDate": "2026-11-30",
+    "dateLabel": "Nov",
+    "notes": "Decision on scaling digital work management across the network."
+  },
+
+  {
+    "id": "qm-cat3-1",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "CAT3 Labour Management",
+    "milestone": "SteerCo Endorsement of Preferred Option",
+    "targetDate": "2026-07-31",
+    "dateLabel": "Jul",
+    "notes": "Steering Committee endorses CAT3 labour management preferred option."
+  },
+  {
+    "id": "qm-cat3-2",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "CAT3 Labour Management",
+    "milestone": "Secure Funding",
+    "targetDate": "2026-08-31",
+    "dateLabel": "Aug",
+    "notes": "Capital funding approved and resources allocated for implementation phase."
+  },
+  {
+    "id": "qm-cat3-3",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "CAT3 Labour Management",
+    "milestone": "Start Implementation",
+    "targetDate": "2026-10-01",
+    "dateLabel": "Oct",
+    "notes": "Build phase commences with vendor and internal teams mobilised."
+  },
+
+  {
+    "id": "qm-rsm-1",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "Rolling Stock Maintenance Work Management",
+    "milestone": "Phase 1 Deployment",
+    "targetDate": "2026-07-18",
+    "dateLabel": "Jul",
+    "notes": "Phase 1 tooling deployed at first RSM sites."
+  },
+  {
+    "id": "qm-rsm-2",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "Rolling Stock Maintenance Work Management",
+    "milestone": "RFI Evaluations for Phase 2",
+    "targetDate": "2026-07-31",
+    "dateLabel": "Jul",
+    "notes": "Request for information responses evaluated for Phase 2 tooling selection."
+  },
+  {
+    "id": "qm-rsm-3",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "Rolling Stock Maintenance Work Management",
+    "milestone": "Phase 2 Implementation",
+    "targetDate": "2027-03-31",
+    "dateLabel": "Q1 2027",
+    "notes": "Phase 2 implementation commences Q1 2027."
+  },
+
+  {
+    "id": "qm-tv-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "TrueView",
+    "milestone": "2.0 Ports Phase 1 Build",
+    "targetDate": "2026-11-30",
+    "dateLabel": "Aug–Nov",
+    "notes": "Build phase for TrueView 2.0 Ports Phase 1, running August through November."
+  },
+  {
+    "id": "qm-tv-2",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "TrueView",
+    "milestone": "BS1 Expansion Build",
+    "targetDate": "2026-08-31",
+    "dateLabel": "Aug",
+    "notes": "Build phase for TrueView BS1 expansion."
+  },
+  {
+    "id": "qm-tv-3",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "TrueView",
+    "milestone": "ODS Zone Feature Build",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Build phase for TrueView ODS Zone Feature."
+  },
+
+  {
+    "id": "qm-rt-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "Rostering Tool (Rail)",
+    "milestone": "Rail Harmony Migration Build",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Build phase for Rail Harmony migration into the Rostering Tool."
+  },
+
+  {
+    "id": "qm-di-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "Decision Intelligence",
+    "milestone": "Solution Workshops",
+    "targetDate": "2026-08-31",
+    "dateLabel": "Aug",
+    "notes": "Structured solution workshops with operations stakeholders to validate use cases."
+  },
+  {
+    "id": "qm-di-2",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "Decision Intelligence",
+    "milestone": "Value Case Testing / Endorsement",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Value case tested and endorsed by operations leadership."
+  },
+
+  {
+    "id": "qm-floortour-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "initiative": "Floortour",
+    "milestone": "Current State Assessment and Options Analysis",
+    "targetDate": "2026-09-30",
+    "dateLabel": "End of Q3",
+    "notes": "Current state assessment and options analysis completed by end of Q3 2026."
+  },
+  {
+    "id": "qm-bbu-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "subGroup": "Control Room Digital",
+    "initiative": "Blast & Block Upgrade",
+    "milestone": "Feasibility and Go/No-Go",
+    "targetDate": "2026-12-31",
+    "dateLabel": "Q4",
+    "notes": "Feasibility assessment and go/no-go decision for Blast & Block Upgrade. Q4 2026."
+  },
+
+  {
+    "id": "qm-ds-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "subGroup": "Control Room Digital",
+    "initiative": "Delay Slayer",
+    "initiativeDescription": "Assisted & automated delay accounting and reconciliation",
+    "milestone": "Prototype UAT",
+    "targetDate": "2026-08-31",
+    "dateLabel": "Aug",
+    "notes": "User acceptance testing of the Delay Slayer prototype with operational crews."
+  },
+  {
+    "id": "qm-ds-2",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "subGroup": "Control Room Digital",
+    "initiative": "Delay Slayer",
+    "initiativeDescription": "Assisted & automated delay accounting and reconciliation",
+    "milestone": "Deployment Plan",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Deployment plan finalised based on UAT outcomes."
+  },
+  {
+    "id": "qm-arh-1",
+    "portfolioArea": "Operations & Decision Intelligence",
+    "subGroup": "Control Room Digital",
+    "initiative": "Alarm Rationalisation Hub",
+    "initiativeDescription": "Alarm triage, root cause analysis and rectification platform",
+    "milestone": "Prototype",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Alarm Rationalisation Hub prototype demonstrated to safety and operations leadership."
+  },
+
+  {
+    "id": "qm-sdwg-1",
+    "portfolioArea": "Frontline HSE",
+    "initiative": "Safety Digital Working Group",
+    "initiativeDescription": "Coordinate, triage and progress digital safety initiatives",
+    "milestone": "Coordinate, triage and progress digital safety initiatives",
+    "targetDate": "2026-07-25",
+    "dateLabel": "Late Jul",
+    "notes": "Safety Digital Working Group established to coordinate and progress digital safety initiatives across the portfolio."
+  },
+  {
+    "id": "qm-sa-1",
+    "portfolioArea": "Frontline HSE",
+    "initiative": "Safety Agent",
+    "initiativeDescription": "Safety Agent concept cases and data sources",
+    "milestone": "Concept",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Safety Agent concept cases and data sources defined and validated with safety leadership."
+  },
+
+  {
+    "id": "qm-hc-1",
+    "portfolioArea": "Frontline HSE",
+    "initiative": "HydroChart",
+    "initiativeDescription": "Hydrogeological data and visualisation",
+    "milestone": "Deployed to Production — Mine Water Management",
+    "targetDate": "2026-07-31",
+    "dateLabel": "31 Jul",
+    "notes": "HydroChart water-management visualisation tool deployed to production."
+  },
+  {
+    "id": "qm-drippy-1",
+    "portfolioArea": "Frontline HSE",
+    "initiative": "Drippy Water Management Assistant",
+    "initiativeDescription": "User support with water data, insights and platform navigation",
+    "milestone": "Phase 1 Release",
+    "targetDate": "2026-08-31",
+    "dateLabel": "Aug",
+    "notes": "AI-assisted water management assistant Phase 1 released to users."
+  },
+
+  {
+    "id": "qm-sh-1",
+    "portfolioArea": "Frontline People & AI",
+    "initiative": "Shift Handover",
+    "milestone": "Pilbara Operation Production Deployment",
+    "targetDate": "2026-09-30",
+    "dateLabel": "By end of Q3",
+    "notes": "Shift handover tool Pilbara operations production deployment by end of Q3 2026."
+  },
+  {
+    "id": "qm-pi-1",
+    "portfolioArea": "Frontline People & AI",
+    "initiative": "Performance Insights",
+    "milestone": "Daily Insights to Production",
+    "targetDate": "2026-07-28",
+    "dateLabel": "28 Jul",
+    "notes": "Daily performance insights promoted to production for operational crews."
+  },
+  {
+    "id": "qm-pi-2",
+    "portfolioArea": "Frontline People & AI",
+    "initiative": "Performance Insights",
+    "milestone": "Weekly Insights Prototype",
+    "targetDate": "2026-08-29",
+    "dateLabel": "29 Aug",
+    "notes": "Weekly performance insights prototype released for feedback."
+  },
+  {
+    "id": "qm-ict-1",
+    "portfolioArea": "Frontline People & AI",
+    "initiative": "Integrated Cadence Tool",
+    "milestone": "Phase 1 Site Deployment",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Q3",
+    "notes": "Integrated Cadence Tool Phase 1 site deployment across selected sites."
+  },
+  {
+    "id": "qm-sps-1",
+    "portfolioArea": "Frontline People & AI",
+    "initiative": "SPS Digital Tools",
+    "milestone": "Handover and clone for RTIO",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Q3",
+    "notes": "SPS Digital Tools handed over and cloned for Rio Tinto Iron Ore operations."
+  }
+]

@@ -58,6 +58,57 @@ export function relativeDay(iso: string): string {
   return `${Math.abs(d)} days ago`;
 }
 
+// ---------------------------------------------------------------------------
+// Quarter helpers
+// ---------------------------------------------------------------------------
+
+const QUARTER_MONTHS: Record<number, { months: string; startMD: string; endMD: string }> = {
+  1: { months: "January – March",   startMD: "01-01", endMD: "03-31" },
+  2: { months: "April – June",      startMD: "04-01", endMD: "06-30" },
+  3: { months: "July – September",  startMD: "07-01", endMD: "09-30" },
+  4: { months: "October – December",startMD: "10-01", endMD: "12-31" },
+};
+
+export interface QuarterInfo {
+  /** e.g. 3 */
+  number: number;
+  /** e.g. 2026 */
+  year: number;
+  /** e.g. "Q3 2026" */
+  label: string;
+  /** e.g. "July – September" */
+  monthRange: string;
+  /** ISO YYYY-MM-DD first day of quarter */
+  start: string;
+  /** ISO YYYY-MM-DD last day of quarter */
+  end: string;
+}
+
+/** Returns quarter metadata derived from today's local date. */
+export function currentQuarter(): QuarterInfo {
+  const t = today();
+  const year = t.getFullYear();
+  const q = Math.floor(t.getMonth() / 3) + 1;
+  const meta = QUARTER_MONTHS[q]!;
+  return {
+    number: q,
+    year,
+    label: `Q${q} ${year}`,
+    monthRange: meta.months,
+    start: `${year}-${meta.startMD}`,
+    end: `${year}-${meta.endMD}`,
+  };
+}
+
+/** e.g. "1 July 2026" from an ISO date string. */
+export function formatDateLong(iso: string): string {
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(parseISO(iso));
+}
+
 /** Initials for an avatar fallback, e.g. "Phillip Rickson" -> "PR". */
 export function initials(name: string): string {
   return name

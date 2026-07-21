@@ -9,6 +9,7 @@ const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage").then((m
 const EngagementsPage = lazy(() => import("./pages/EngagementsPage").then((m) => ({ default: m.EngagementsPage })));
 const SitesPage = lazy(() => import("./pages/SitesPage").then((m) => ({ default: m.SitesPage })));
 const UpdatesPage = lazy(() => import("./pages/UpdatesPage").then((m) => ({ default: m.UpdatesPage })));
+const QuarterlyPage = lazy(() => import("./pages/QuarterlyPage").then((m) => ({ default: m.QuarterlyPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 export default function App(): JSX.Element {
@@ -23,6 +24,7 @@ export default function App(): JSX.Element {
           <Route path="engagements" element={<EngagementsPage />} />
           <Route path="sites" element={<SitesPage />} />
           <Route path="updates" element={<UpdatesPage />} />
+          <Route path="quarterly" element={<QuarterlyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

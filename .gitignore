@@ -9,3 +9,4 @@ dist-ssr
 .npm-cache/
 *.tsbuildinfo
 api/local.settings.json
+.tmp/

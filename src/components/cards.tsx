@@ -66,7 +66,7 @@ const useStyles = makeStyles({
 });
 
 interface SectionCardProps {
-  title: string;
+  title: React.ReactNode;
   icon?: IconName;
   action?: ReactNode;
   /** Remove body padding (for tables/lists that manage their own spacing). */

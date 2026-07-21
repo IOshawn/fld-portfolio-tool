@@ -23,6 +23,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { Icon } from "./Icon";
+import { PeoplePicker } from "./PeoplePicker";
 import { DependencyPicker } from "./DependencyPicker";
 import { resolveDep } from "./DependencyGraph";
 import { usePortfolioActions } from "../hooks/usePortfolio";
@@ -260,17 +261,18 @@ export function ProjectEditDrawer({ project, allProjects, open, onClose }: Props
 
           <div className={s.row}>
             <Field label="Owner" required>
-              <Input
+              <PeoplePicker
                 value={form.owner}
-                onChange={(_, d) => set("owner", d.value)}
-                placeholder="Full name"
+                onChange={(name) => set("owner", name)}
+                placeholder="Search by name or email…"
+                required
               />
             </Field>
             <Field label="Sponsor">
-              <Input
+              <PeoplePicker
                 value={form.sponsor}
-                onChange={(_, d) => set("sponsor", d.value)}
-                placeholder="Full name"
+                onChange={(name) => set("sponsor", name)}
+                placeholder="Search by name or email…"
               />
             </Field>
           </div>
