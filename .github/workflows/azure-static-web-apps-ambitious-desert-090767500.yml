@@ -36,6 +36,8 @@ jobs:
           npm_config_fetch_retry_maxtimeout: 120000
       - name: Build app
         run: npm run build
+        env:
+          VITE_API_MODE: "functions"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
