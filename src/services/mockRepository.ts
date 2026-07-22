@@ -9,6 +9,7 @@ import type {
   Milestone,
   Engagement,
   ProjectUpdate,
+  TravelEntry,
 } from "../types/models";
 import type {
   PortfolioRepository,
@@ -16,12 +17,14 @@ import type {
   MilestoneInput,
   EngagementInput,
   ProjectEdit,
+  TravelEntryInput,
 } from "./repository";
 
 import projectsSeed from "../data/projects.json";
 import milestonesSeed from "../data/milestones.json";
 import engagementsSeed from "../data/engagements.json";
 import updatesSeed from "../data/updates.json";
+import travelSeed from "../data/travel.json";
 
 /** Simulated network latency so loading/saving states are exercised in the UI. */
 const LATENCY_MS = 280;
@@ -40,6 +43,7 @@ export class MockRepository implements PortfolioRepository {
   private milestones: Milestone[] = clone(milestonesSeed) as Milestone[];
   private engagements: Engagement[] = clone(engagementsSeed) as Engagement[];
   private updates: ProjectUpdate[] = clone(updatesSeed) as ProjectUpdate[];
+  private travelEntries: TravelEntry[] = clone(travelSeed) as TravelEntry[];
 
   getPortfolio(): Promise<PortfolioData> {
     return delay({
@@ -47,6 +51,7 @@ export class MockRepository implements PortfolioRepository {
       milestones: clone(this.milestones),
       engagements: clone(this.engagements),
       updates: clone(this.updates),
+      travelEntries: clone(this.travelEntries),
     });
   }
 
@@ -114,6 +119,47 @@ export class MockRepository implements PortfolioRepository {
       ? this.engagements.map((e) => (e.id === input.id ? record : e))
       : [...this.engagements, record];
     return delay(clone(record));
+  }
+
+  upsertTravelEntry(input: TravelEntryInput): Promise<TravelEntry> {
+    const record: TravelEntry = {
+      id: input.id ?? nextId("t"),
+      person: input.person,
+      initiativeId: input.initiativeId,
+      site: input.site,
+      workArea: input.workArea,
+      team: input.team,
+      departureDate: input.departureDate,
+      returnDate: input.returnDate,
+      flightNumber: input.flightNumber,
+      description: input.description,
+      status: input.status,
+      associatedWith: input.associatedWith,
+    };
+    this.travelEntries = input.id
+      ? this.travelEntries.map((e) => (e.id === input.id ? record : e))
+      : [...this.travelEntries, record];
+    return delay(clone(record));
+  }
+
+  deleteTravelEntry(id: string): Promise<void> {
+    this.travelEntries = this.travelEntries.filter((e) => e.id !== id);
+    return delay(undefined as void);
+  }
+
+  deleteProject(id: string): Promise<void> {
+    this.projects = this.projects.filter((p) => p.id !== id);
+    return delay(undefined as void);
+  }
+
+  deleteEngagement(id: string): Promise<void> {
+    this.engagements = this.engagements.filter((e) => e.id !== id);
+    return delay(undefined as void);
+  }
+
+  deleteMilestone(id: string): Promise<void> {
+    this.milestones = this.milestones.filter((m) => m.id !== id);
+    return delay(undefined as void);
   }
 
   updateProject(input: ProjectEdit): Promise<Project> {

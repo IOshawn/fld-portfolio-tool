@@ -12,6 +12,8 @@ import type {
   Milestone,
   Engagement,
   ProjectUpdate,
+  TravelEntry,
+  TravelStatus,
   Stage,
   Status,
   MilestoneStatus,
@@ -79,6 +81,22 @@ export interface EngagementInput {
   notes: string;
 }
 
+/** Payload for creating or editing a travel entry. */
+export interface TravelEntryInput {
+  id?: string;
+  person: string;
+  initiativeId: string;
+  site: Site;
+  workArea: WorkArea;
+  team: string;
+  departureDate: string;
+  returnDate: string;
+  flightNumber?: string;
+  description: string;
+  status: TravelStatus;
+  associatedWith: string[];
+}
+
 export interface PortfolioRepository {
   /** Load the full portfolio (all four lists). */
   getPortfolio(): Promise<PortfolioData>;
@@ -100,4 +118,19 @@ export interface PortfolioRepository {
 
   /** Edit core fields of an existing initiative (owner, portfolio, etc.). */
   updateProject(input: ProjectEdit): Promise<Project>;
+
+  /** Create (no id) or update (with id) a travel entry. */
+  upsertTravelEntry(input: TravelEntryInput): Promise<TravelEntry>;
+
+  /** Delete a travel entry by id. */
+  deleteTravelEntry(id: string): Promise<void>;
+
+  /** Delete a project by id. */
+  deleteProject(id: string): Promise<void>;
+
+  /** Delete an engagement by id. */
+  deleteEngagement(id: string): Promise<void>;
+
+  /** Delete a milestone by id. */
+  deleteMilestone(id: string): Promise<void>;
 }

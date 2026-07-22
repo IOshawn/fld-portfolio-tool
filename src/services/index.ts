@@ -28,4 +28,5 @@ export type {
   MilestoneInput,
   EngagementInput,
   ProjectEdit,
+  TravelEntryInput,
 } from "./repository";

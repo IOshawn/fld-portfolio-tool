@@ -18,6 +18,7 @@ import type {
   Milestone,
   Engagement,
   ProjectUpdate,
+  TravelEntry,
 } from "../types/models";
 import type {
   PortfolioRepository,
@@ -25,6 +26,7 @@ import type {
   MilestoneInput,
   EngagementInput,
   ProjectEdit,
+  TravelEntryInput,
 } from "./repository";
 
 const BASE = "/data-api/rest";
@@ -132,7 +134,7 @@ export class RestRepository implements PortfolioRepository {
       submittedBy: S(i.submittedBy),
     }));
 
-    return { projects, milestones, engagements, updates };
+    return { projects, milestones, engagements, updates, travelEntries: [] };
   }
 
   async addProjectUpdate(input: NewProjectUpdate): Promise<{ update: ProjectUpdate; project: Project }> {
@@ -211,5 +213,25 @@ export class RestRepository implements PortfolioRepository {
     });
     await patch("Projects", input.id, body);
     return (await this.getPortfolio()).projects.find((p) => p.id === input.id)!;
+  }
+
+  async upsertTravelEntry(_input: TravelEntryInput): Promise<TravelEntry> {
+    throw new Error("Travel entries are not supported by the retired REST repository.");
+  }
+
+  async deleteTravelEntry(_id: string): Promise<void> {
+    throw new Error("Travel entries are not supported by the retired REST repository.");
+  }
+
+  async deleteProject(_id: string): Promise<void> {
+    throw new Error("Project deletion is not supported by the retired REST repository.");
+  }
+
+  async deleteEngagement(_id: string): Promise<void> {
+    throw new Error("Engagement deletion is not supported by the retired REST repository.");
+  }
+
+  async deleteMilestone(_id: string): Promise<void> {
+    throw new Error("Milestone deletion is not supported by the retired REST repository.");
   }
 }

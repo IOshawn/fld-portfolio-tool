@@ -66,3 +66,19 @@ CREATE TABLE phub.Updates (
   [submittedBy]       NVARCHAR(150)
 );
 GO
+IF OBJECT_ID('phub.TravelEntries','U') IS NULL
+CREATE TABLE phub.TravelEntries (
+  [id]             INT IDENTITY(1,1) PRIMARY KEY,
+  [person]         NVARCHAR(150) NOT NULL,
+  [initiativeId]   NVARCHAR(100),
+  [site]           NVARCHAR(50),
+  [workArea]       NVARCHAR(100),
+  [team]           NVARCHAR(120),
+  [departureDate]  DATE,
+  [returnDate]     DATE,
+  [flightNumber]   NVARCHAR(50),
+  [description]    NVARCHAR(MAX),
+  [status]         NVARCHAR(50),
+  [associatedWith] NVARCHAR(MAX)
+);
+GO

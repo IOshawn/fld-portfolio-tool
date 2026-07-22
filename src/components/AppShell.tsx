@@ -9,14 +9,16 @@ import {
 } from "@fluentui/react-components";
 import { Icon, type IconName } from "./Icon";
 
-const NAV: { to: string; label: string; shortLabel: string; icon: IconName; end?: boolean }[] = [
+const NAV: { to: string; label: string; shortLabel: string; icon: IconName; end?: boolean; desktopOnly?: boolean }[] = [
   { to: "/", label: "Home", shortLabel: "Home", icon: "home", end: true },
   { to: "/roadmap", label: "Portfolio Roadmap", shortLabel: "Roadmap", icon: "roadmap" },
   { to: "/projects", label: "Projects", shortLabel: "Projects", icon: "projects" },
   { to: "/engagements", label: "Engagements", shortLabel: "Engage", icon: "engagements" },
+  { to: "/travel", label: "Travel & Roster", shortLabel: "Travel", icon: "travel" },
   { to: "/sites", label: "Sites", shortLabel: "Sites", icon: "sites" },
   { to: "/updates", label: "Updates", shortLabel: "Updates", icon: "updates" },
   { to: "/quarterly", label: "Q3 Summary", shortLabel: "Q3", icon: "quarter" },
+  { to: "/admin", label: "Admin", shortLabel: "Admin", icon: "admin", desktopOnly: true },
 ];
 
 const useStyles = makeStyles({
@@ -227,9 +229,9 @@ export function AppShell(): JSX.Element {
         </div>
       </main>
 
-      {/* Mobile bottom navigation bar */}
+      {/* Mobile bottom navigation bar (desktop-only items excluded) */}
       <nav className={s.bottomNav} aria-label="Primary">
-        {NAV.map((item) => (
+        {NAV.filter((item) => !item.desktopOnly).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

@@ -65,6 +65,24 @@ export const ENTITIES = {
     idType: "int",
     columns: ["projectId", "date", "summary", "risks", "decisionsRequired", "submittedBy"],
     orderBy: "[date] DESC, [id] DESC"
+  },
+  TravelEntries: {
+    table: "phub.TravelEntries",
+    idType: "int",
+    columns: [
+      "person",
+      "initiativeId",
+      "site",
+      "workArea",
+      "team",
+      "departureDate",
+      "returnDate",
+      "flightNumber",
+      "description",
+      "status",
+      "associatedWith"
+    ],
+    orderBy: "[departureDate], [id]"
   }
 } satisfies Record<string, EntityConfig>;
 
@@ -128,4 +146,16 @@ export async function patchRow(entity: EntityName, id: string, body: Row): Promi
   const row = normalizeRows(result)[0];
   if (!row) throw new Error(`${entity} record not found: ${id}`);
   return row;
+}
+
+export async function deleteRow(entity: EntityName, id: string): Promise<void> {
+  const config = ENTITIES[entity];
+  const pool = await getPool();
+  const request = pool.request();
+  bindId(request, config, id);
+
+  const result = await request.query(`DELETE FROM ${config.table} WHERE [id] = @id`);
+  if ((result.rowsAffected[0] ?? 0) === 0) {
+    throw new Error(`${entity} record not found: ${id}`);
+  }
 }

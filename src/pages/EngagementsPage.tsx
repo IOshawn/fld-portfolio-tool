@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { makeStyles, shorthands, tokens, Text, Button, TabList, Tab } from "@fluentui/react-components";
 import { PageHeader } from "../components/PageHeader";
 import { PortfolioGate } from "../components/PortfolioGate";
@@ -10,7 +10,7 @@ import { InitiativeEngagementPanel } from "../components/InitiativeEngagementPan
 import { EmptyState } from "../components/states";
 import { Icon } from "../components/Icon";
 import type { PortfolioData } from "../types/models";
-import { ENGAGEMENT_STAGES, ENGAGEMENT_STATUSES } from "../types/models";
+import { ENGAGEMENT_STAGES, ENGAGEMENT_STATUSES, SITE_NAMES } from "../types/models";
 import {
   applyEngagementFilters,
   anyFilterActive,
@@ -81,7 +81,7 @@ function useIsMobile(breakpoint = 820): boolean {
 
 function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
   const s = useStyles();
-  const { projects, engagements } = data;
+  const { projects, engagements, travelEntries } = data;
   const [params] = useSearchParams();
   const initialInitiative = params.get("initiative") ?? "";
 
@@ -122,6 +122,19 @@ function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
 
   const showScrollHint = isMobile && (tab === "matrix" || tab === "heatmap");
 
+  // Travel indicator — count entries matching the current site filter (if any)
+  const now = new Date();
+  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const travelCount = useMemo(() => {
+    const active = (travelEntries ?? []).filter(
+      (e) => e.departureDate <= todayISO && e.returnDate >= todayISO && e.status !== "Cancelled"
+    );
+    if (filters.site) return active.filter((e) => e.site === filters.site).length;
+    return active.length;
+  }, [travelEntries, filters.site, todayISO]);
+
+  const travelLinkParams = filters.site ? `?site=${filters.site}` : "";
+
   return (
     <>
       <PageHeader
@@ -136,6 +149,27 @@ function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
           ) : undefined
         }
       />
+
+      {travelCount > 0 ? (
+        <div style={{
+          display: "inline-flex",
+          alignItems: "center",
+          columnGap: "6px",
+          marginBottom: "16px",
+          marginTop: "-8px",
+          fontSize: "13px",
+          color: tokens.colorBrandForeground2,
+        }}>
+          <Icon name="travel" size={14} />
+          <Link
+            to={`/travel${travelLinkParams}`}
+            style={{ color: "inherit", fontWeight: 600, textDecoration: "none" }}
+          >
+            {travelCount} {travelCount === 1 ? "person" : "people"} currently travelling
+            {filters.site ? ` to ${SITE_NAMES[filters.site as keyof typeof SITE_NAMES] ?? filters.site}` : ""}
+          </Link>
+        </div>
+      ) : null}
 
       <div className={s.statGrid}>
         <StatCard label="Engagements" value={filtered.length} accentColor="#2f5e9e" />

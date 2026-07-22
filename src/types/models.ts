@@ -182,10 +182,37 @@ export interface ProjectUpdate {
   submittedBy: string;
 }
 
+// ---------------------------------------------------------------------------
+// Travel & Roster
+// ---------------------------------------------------------------------------
+
+export const TRAVEL_STATUSES = ["Planned", "Travelling", "Returned", "Cancelled"] as const;
+export type TravelStatus = (typeof TRAVEL_STATUSES)[number];
+
+export interface TravelEntry {
+  id: string;
+  /** Person travelling — free text; future Task #6 will link to the directory. */
+  person: string;
+  /** Optional FK to Project.id */
+  initiativeId: string;
+  site: Site;
+  workArea: WorkArea;
+  team: string;
+  departureDate: string; // YYYY-MM-DD
+  returnDate: string; // YYYY-MM-DD
+  /** Stored for display; live lookup is out of scope for this version. */
+  flightNumber?: string;
+  description: string;
+  status: TravelStatus;
+  /** IDs of other TravelEntry records travelling together with this person. */
+  associatedWith: string[];
+}
+
 /** Aggregate snapshot of the whole portfolio held by the in-memory store. */
 export interface PortfolioData {
   projects: Project[];
   milestones: Milestone[];
   engagements: Engagement[];
   updates: ProjectUpdate[];
+  travelEntries: TravelEntry[];
 }

@@ -11,6 +11,7 @@ import type {
   PortfolioData,
   Project,
   ProjectUpdate,
+  TravelEntry,
 } from "../types/models";
 import type {
   EngagementInput,
@@ -18,6 +19,7 @@ import type {
   NewProjectUpdate,
   PortfolioRepository,
   ProjectEdit,
+  TravelEntryInput,
 } from "./repository";
 
 const BASE = "/api";
@@ -32,6 +34,14 @@ async function list<T>(entity: string): Promise<T[]> {
   const res = await fetch(`${BASE}/${entity}`, { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`GET ${entity} failed: ${res.status}`);
   return (await res.json()) as T[];
+}
+
+async function optionalList<T>(entity: string): Promise<T[]> {
+  try {
+    return await list<T>(entity);
+  } catch {
+    return [];
+  }
 }
 
 async function create<T>(entity: string, body: Record<string, unknown>): Promise<T> {
@@ -56,6 +66,14 @@ async function patch<T>(
   });
   if (!res.ok) throw new Error(`PATCH ${entity}/${id} failed: ${res.status}`);
   return (await res.json()) as T;
+}
+
+async function remove(entity: string, id: string | number): Promise<void> {
+  const res = await fetch(`${BASE}/${entity}/${encodeURIComponent(String(id))}`, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) throw new Error(`DELETE ${entity}/${id} failed: ${res.status}`);
 }
 
 function projectFromRow(i: Row): Project {
@@ -122,13 +140,31 @@ function updateFromRow(i: Row): ProjectUpdate {
   };
 }
 
+function travelEntryFromRow(i: Row): TravelEntry {
+  return {
+    id: S(i.id),
+    person: S(i.person),
+    initiativeId: S(i.initiativeId),
+    site: S(i.site) as TravelEntry["site"],
+    workArea: S(i.workArea) as TravelEntry["workArea"],
+    team: S(i.team),
+    departureDate: dateOnly(i.departureDate),
+    returnDate: dateOnly(i.returnDate),
+    flightNumber: S(i.flightNumber) || undefined,
+    description: S(i.description),
+    status: S(i.status) as TravelEntry["status"],
+    associatedWith: splitDeps(i.associatedWith),
+  };
+}
+
 export class FunctionsRepository implements PortfolioRepository {
   async getPortfolio(): Promise<PortfolioData> {
-    const [pr, ms, en, up] = await Promise.all([
+    const [pr, ms, en, up, tr] = await Promise.all([
       list<Row>("Projects"),
       list<Row>("Milestones"),
       list<Row>("Engagements"),
       list<Row>("Updates"),
+      optionalList<Row>("TravelEntries"),
     ]);
 
     return {
@@ -136,6 +172,7 @@ export class FunctionsRepository implements PortfolioRepository {
       milestones: ms.map(milestoneFromRow),
       engagements: en.map(engagementFromRow),
       updates: up.map(updateFromRow),
+      travelEntries: tr.map(travelEntryFromRow),
     };
   }
 
@@ -205,5 +242,41 @@ export class FunctionsRepository implements PortfolioRepository {
       else body[k] = input[k];
     });
     return projectFromRow(await patch<Row>("Projects", input.id, body));
+  }
+
+  async upsertTravelEntry(input: TravelEntryInput): Promise<TravelEntry> {
+    const body = {
+      person: input.person,
+      initiativeId: input.initiativeId,
+      site: input.site,
+      workArea: input.workArea,
+      team: input.team,
+      departureDate: input.departureDate,
+      returnDate: input.returnDate,
+      flightNumber: input.flightNumber,
+      description: input.description,
+      status: input.status,
+      associatedWith: input.associatedWith.join("; "),
+    };
+    const row = input.id
+      ? await patch<Row>("TravelEntries", input.id, body)
+      : await create<Row>("TravelEntries", body);
+    return travelEntryFromRow(row);
+  }
+
+  async deleteTravelEntry(id: string): Promise<void> {
+    await remove("TravelEntries", id);
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    await remove("Projects", id);
+  }
+
+  async deleteEngagement(id: string): Promise<void> {
+    await remove("Engagements", id);
+  }
+
+  async deleteMilestone(id: string): Promise<void> {
+    await remove("Milestones", id);
   }
 }

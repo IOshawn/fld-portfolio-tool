@@ -6,13 +6,14 @@
  * local cache so the whole app (Home counts, Projects cards, detail page)
  * reflects the change immediately without a full reload.
  */
-import type { PortfolioData, Milestone, Engagement, Project } from "../types/models";
+import type { PortfolioData, Milestone, Engagement, Project, TravelEntry } from "../types/models";
 import {
   repository,
   type NewProjectUpdate,
   type MilestoneInput,
   type EngagementInput,
   type ProjectEdit,
+  type TravelEntryInput,
 } from "../services";
 
 export type LoadPhase = "loading" | "ready" | "error";
@@ -118,6 +119,57 @@ class PortfolioStore {
       data: { ...data, engagements: upsertById(data.engagements, record) },
     });
     return record;
+  }
+
+  async saveTravelEntry(input: TravelEntryInput): Promise<TravelEntry> {
+    const record = await repository.upsertTravelEntry(input);
+    const data = this.requireData();
+    this.emit({
+      phase: "ready",
+      error: null,
+      data: { ...data, travelEntries: upsertById(data.travelEntries, record) },
+    });
+    return record;
+  }
+
+  async deleteTravelEntry(id: string): Promise<void> {
+    await repository.deleteTravelEntry(id);
+    const data = this.requireData();
+    this.emit({
+      phase: "ready",
+      error: null,
+      data: { ...data, travelEntries: data.travelEntries.filter((e) => e.id !== id) },
+    });
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    await repository.deleteProject(id);
+    const data = this.requireData();
+    this.emit({
+      phase: "ready",
+      error: null,
+      data: { ...data, projects: data.projects.filter((p) => p.id !== id) },
+    });
+  }
+
+  async deleteEngagement(id: string): Promise<void> {
+    await repository.deleteEngagement(id);
+    const data = this.requireData();
+    this.emit({
+      phase: "ready",
+      error: null,
+      data: { ...data, engagements: data.engagements.filter((e) => e.id !== id) },
+    });
+  }
+
+  async deleteMilestone(id: string): Promise<void> {
+    await repository.deleteMilestone(id);
+    const data = this.requireData();
+    this.emit({
+      phase: "ready",
+      error: null,
+      data: { ...data, milestones: data.milestones.filter((m) => m.id !== id) },
+    });
   }
 }
 

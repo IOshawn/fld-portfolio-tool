@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { createRow, EntityName, ENTITIES, listRows, patchRow } from "../sqlRepository.js";
+import { createRow, deleteRow, EntityName, ENTITIES, listRows, patchRow } from "../sqlRepository.js";
 import { errorResponse, json } from "../http.js";
 
 function getEntity(name: string): EntityName {
@@ -59,6 +59,21 @@ async function patchHandler(
   }
 }
 
+async function deleteHandler(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  try {
+    const entity = getEntity(request.params.entity);
+    context.log(`Deleting ${entity}/${request.params.id}`);
+    await deleteRow(entity, request.params.id);
+    return { status: 204 };
+  } catch (error) {
+    context.error(error);
+    return errorResponse(error);
+  }
+}
+
 app.http("listEntities", {
   route: "{entity}",
   methods: ["GET"],
@@ -78,4 +93,11 @@ app.http("patchEntity", {
   methods: ["PATCH"],
   authLevel: "anonymous",
   handler: patchHandler
+});
+
+app.http("deleteEntity", {
+  route: "{entity}/{id}",
+  methods: ["DELETE"],
+  authLevel: "anonymous",
+  handler: deleteHandler
 });
