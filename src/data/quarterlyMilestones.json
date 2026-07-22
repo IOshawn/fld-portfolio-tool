@@ -19,6 +19,16 @@
   },
 
   {
+    "id": "qm-ca-1",
+    "portfolioArea": "Frontline Maintenance",
+    "initiative": "Contractor Access",
+    "milestone": "Go/No-Go Stage Gate",
+    "targetDate": "2026-07-31",
+    "dateLabel": "Jul",
+    "notes": "Go/No-Go stage gate decision for the Contractor Access digital solution."
+  },
+
+  {
     "id": "qm-dwm-1",
     "portfolioArea": "Frontline Maintenance",
     "initiative": "Digital Work Management",
