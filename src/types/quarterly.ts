@@ -4,10 +4,11 @@
  */
 
 export const QUARTERLY_PORTFOLIO_AREAS = [
-  "Frontline Maintenance",
+  "Maintenance & Work Management",
   "Operations & Decision Intelligence",
-  "Frontline HSE",
-  "Frontline People & AI",
+  "Workforce Safety",
+  "Performance & Experience Enablement",
+  "Frontline",
 ] as const;
 
 export type PortfolioArea = (typeof QUARTERLY_PORTFOLIO_AREAS)[number];

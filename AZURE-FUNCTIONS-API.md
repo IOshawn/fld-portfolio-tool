@@ -12,7 +12,7 @@ The React app remains on mock data until the workflow is updated with:
 
 ```yaml
 env:
-  VITE_API_MODE: "functions"
+  VITE_USE_API: "true"
 ```
 
 ## Local Project
@@ -69,9 +69,19 @@ Required Function App settings:
 ```text
 FUNCTIONS_EXTENSION_VERSION=~4
 FUNCTIONS_WORKER_RUNTIME=node
-AzureWebJobsStorage=<storage account connection string>
+AzureWebJobsStorage__accountName=<storage account name>
+AzureWebJobsStorage__credential=managedidentity
 SQL_CONNECTION_STRING=<your Azure SQL connection string>
 ```
+
+Use Microsoft Entra managed identity for the Functions host storage account. Enable the
+Function App's system-assigned identity and grant it the host-storage data-plane roles
+required by the app (at minimum **Storage Blob Data Owner** for the host connection; add
+Queue and Table data roles if the app begins using those services). Do not set the legacy
+`AzureWebJobsStorage` connection-string setting in Azure. `AzureWebJobsStorage__accountName`
+is appropriate for public Azure with the standard DNS suffix; use the service URI settings
+instead for sovereign clouds or custom DNS. Keep `UseDevelopmentStorage=true` in the local
+settings file for local development.
 
 The GitHub workflow `.github/workflows/main_fld-portfolio.yml` deploys only the `api/`
 folder. If functions fail to list in the Azure Portal, confirm the deployed package contains
@@ -105,7 +115,9 @@ After the Function App is deployed, linked, and tested, set the Static Web App b
 
 ```yaml
 env:
-  VITE_API_MODE: "functions"
+  VITE_USE_API: "true"
 ```
 
-Do not use `VITE_USE_API=true`; that points to the retired `/data-api/rest/*` path.
+The current UI reconciliation branch must first be deployed with its matching Azure SQL
+schema migration and Functions endpoint contract; leave this setting unset while the live
+Function App is still serving the older generic entity API.

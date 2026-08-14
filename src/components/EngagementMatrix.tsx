@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { makeStyles, shorthands, tokens, Text } from "@fluentui/react-components";
@@ -11,13 +11,53 @@ import { formatDate } from "../lib/format";
 
 const HEAT_BASE = "47, 94, 158"; // rgb for the density ramp
 
+/** Detect whether we're on a narrow screen. */
+function useIsMobile(breakpoint = 820): boolean {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth <= breakpoint : false
+  );
+  const ref = useRef(breakpoint);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${ref.current}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    setIsMobile(mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
+
 const useStyles = makeStyles({
+  // ── Shared scroll wrapper ────────────────────────────────────────────────
+  scrollWrap: {
+    position: "relative",
+  },
   scroll: {
     ...shorthands.overflow("auto"),
     backgroundColor: tokens.colorNeutralBackground1,
     ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
     ...shorthands.borderRadius("12px"),
     boxShadow: tokens.shadow2,
+    // Show a subtle scrollbar so the user knows it scrolls
+    scrollbarWidth: "thin",
+    scrollbarColor: `${tokens.colorNeutralStroke1} transparent`,
+    WebkitOverflowScrolling: "touch",
+  },
+  // Right-edge fade overlay to hint at scrollability
+  scrollFade: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: "40px",
+    background: "linear-gradient(to right, transparent, rgba(255,255,255,0.85))",
+    borderRadius: "0 12px 12px 0",
+    pointerEvents: "none",
+    // Only visible on mobile
+    display: "none",
+    "@media (max-width: 820px)": {
+      display: "block",
+    },
   },
   grid: {
     display: "grid",
@@ -145,6 +185,68 @@ const useStyles = makeStyles({
   legendItem: { display: "flex", alignItems: "center", columnGap: "6px" },
   swatch: { width: "12px", height: "12px", ...shorthands.borderRadius("3px") },
   muted: { color: tokens.colorNeutralForeground3 },
+
+  // ── Mobile card-list styles ──────────────────────────────────────────────
+  cardList: {
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap("12px"),
+  },
+  card: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius("10px"),
+    ...shorthands.padding("12px", "14px"),
+    boxShadow: tokens.shadow2,
+  },
+  cardTitle: {
+    fontWeight: 700,
+    fontSize: "13px",
+    color: tokens.colorNeutralForeground1,
+    marginBottom: "8px",
+  },
+  cardSiteRow: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("6px"),
+    flexWrap: "wrap",
+    ...shorthands.padding("4px", "0"),
+    ...shorthands.borderBottom("1px", "solid", tokens.colorNeutralStroke3),
+    ":last-child": { ...shorthands.borderBottom("0") },
+  },
+  cardSiteLabel: {
+    fontSize: "11px",
+    fontWeight: 600,
+    color: tokens.colorNeutralForeground3,
+    minWidth: "34px",
+  },
+  cardChips: {
+    display: "flex",
+    flexWrap: "wrap",
+    ...shorthands.gap("4px"),
+  },
+  heatBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "28px",
+    height: "28px",
+    ...shorthands.borderRadius("6px"),
+    fontWeight: 700,
+    fontSize: "13px",
+    fontVariantNumeric: "tabular-nums",
+  },
+  heatBadgeEmpty: {
+    width: "28px",
+    height: "28px",
+    ...shorthands.borderRadius("6px"),
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorNeutralForeground4,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "11px",
+  },
 });
 
 function useProjectMap(projects: Project[]) {
@@ -176,8 +278,8 @@ export function StageLegend(): JSX.Element {
   );
 }
 
-/** Master Work Area × Site matrix; cells show initiative chips coloured by stage. */
-export function EngagementMatrix({
+/** Mobile card-list for EngagementMatrix */
+function MatrixCardList({
   engagements,
   projects,
 }: {
@@ -188,26 +290,30 @@ export function EngagementMatrix({
   const projectMap = useProjectMap(projects);
   const matrix = useMemo(() => buildMatrix(engagements), [engagements]);
 
-  return (
-    <>
-      <div className={s.scroll}>
-        <div className={s.grid} style={{ gridTemplateColumns: gridColumns(SITES.length) }}>
-          <div className={s.corner}>Work Area</div>
-          {SITES.map((site) => (
-            <Link key={site} to={`/sites?site=${encodeURIComponent(site)}`} className={s.colHead} title={SITE_NAMES[site]}>
-              {site}
-            </Link>
-          ))}
+  // Only render work areas that have at least one engagement
+  const activeWAs = WORK_AREAS.filter((wa) =>
+    SITES.some((site) => (matrix.get(cellKey(wa, site)) ?? []).length > 0)
+  );
 
-          {WORK_AREAS.map((wa) => (
-            <RowFragment key={wa} workArea={wa}>
-              <div className={s.rowHead}>{wa}</div>
-              {SITES.map((site) => {
-                const items = (matrix.get(cellKey(wa, site)) ?? []).slice().sort(
-                  (a, b) => engagementStageOrder(b.stage) - engagementStageOrder(a.stage)
-                );
-                return (
-                  <div className={s.cell} key={site}>
+  return (
+    <div className={s.cardList}>
+      {activeWAs.map((wa) => {
+        const activeSites = SITES.filter(
+          (site) => (matrix.get(cellKey(wa, site)) ?? []).length > 0
+        );
+        return (
+          <div key={wa} className={s.card}>
+            <div className={s.cardTitle}>{wa}</div>
+            {activeSites.map((site) => {
+              const items = (matrix.get(cellKey(wa, site)) ?? [])
+                .slice()
+                .sort((a, b) => engagementStageOrder(b.stage) - engagementStageOrder(a.stage));
+              return (
+                <div key={site} className={s.cardSiteRow}>
+                  <span className={s.cardSiteLabel} title={SITE_NAMES[site]}>
+                    {site}
+                  </span>
+                  <div className={s.cardChips}>
                     {items.map((e) => {
                       const p = projectMap.get(e.initiativeId);
                       return (
@@ -223,11 +329,144 @@ export function EngagementMatrix({
                       );
                     })}
                   </div>
-                );
-              })}
-            </RowFragment>
-          ))}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Mobile card-list for EngagementHeatmap */
+function HeatmapCardList({
+  counts,
+  onSelect,
+  selected,
+}: {
+  counts: { m: Map<string, number>; max: number };
+  selected: { wa: WorkArea; site: Site } | null;
+  onSelect: (wa: WorkArea, site: Site) => void;
+}): JSX.Element {
+  const s = useStyles();
+
+  const activeWAs = WORK_AREAS.filter((wa) =>
+    SITES.some((site) => (counts.m.get(cellKey(wa, site)) ?? 0) > 0)
+  );
+
+  return (
+    <div className={s.cardList}>
+      {activeWAs.map((wa) => {
+        const activeSites = SITES.filter(
+          (site) => (counts.m.get(cellKey(wa, site)) ?? 0) > 0
+        );
+        return (
+          <div key={wa} className={s.card}>
+            <div className={s.cardTitle}>{wa}</div>
+            {activeSites.map((site) => {
+              const n = counts.m.get(cellKey(wa, site)) ?? 0;
+              const alpha = n === 0 ? 0 : 0.16 + 0.84 * (n / counts.max);
+              const isSel = selected?.wa === wa && selected?.site === site;
+              return (
+                <div key={site} className={s.cardSiteRow}>
+                  <span className={s.cardSiteLabel} title={SITE_NAMES[site]}>
+                    {site}
+                  </span>
+                  <button
+                    type="button"
+                    className={s.heatBadge}
+                    style={{
+                      backgroundColor: `rgba(${HEAT_BASE}, ${alpha})`,
+                      color: alpha > 0.55 ? "#ffffff" : tokens.colorNeutralForeground2,
+                      outlineWidth: isSel ? "2px" : undefined,
+                      outlineStyle: isSel ? "solid" : undefined,
+                      outlineColor: isSel ? tokens.colorBrandStroke1 : undefined,
+                      outlineOffset: isSel ? "-2px" : undefined,
+                    }}
+                    onClick={() => onSelect(wa, site)}
+                    aria-label={`${wa} at ${site}: ${n} initiatives`}
+                  >
+                    {n}
+                  </button>
+                  <Text size={200} className={s.muted} style={{ fontSize: "12px" }}>
+                    {n === 1 ? "initiative" : "initiatives"}
+                  </Text>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Master Work Area × Site matrix; cells show initiative chips coloured by stage. */
+export function EngagementMatrix({
+  engagements,
+  projects,
+}: {
+  engagements: Engagement[];
+  projects: Project[];
+}): JSX.Element {
+  const s = useStyles();
+  const isMobile = useIsMobile();
+  const projectMap = useProjectMap(projects);
+  const matrix = useMemo(() => buildMatrix(engagements), [engagements]);
+
+  if (isMobile) {
+    return (
+      <>
+        <MatrixCardList engagements={engagements} projects={projects} />
+        <StageLegend />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className={s.scrollWrap}>
+        <div className={s.scroll}>
+          <div className={s.grid} style={{ gridTemplateColumns: gridColumns(SITES.length) }}>
+            <div className={s.corner}>Work Area</div>
+            {SITES.map((site) => (
+              <Link key={site} to={`/sites?site=${encodeURIComponent(site)}`} className={s.colHead} title={SITE_NAMES[site]}>
+                {site}
+              </Link>
+            ))}
+
+            {WORK_AREAS.map((wa) => (
+              <RowFragment key={wa} workArea={wa}>
+                <div className={s.rowHead}>{wa}</div>
+                {SITES.map((site) => {
+                  const items = (matrix.get(cellKey(wa, site)) ?? []).slice().sort(
+                    (a, b) => engagementStageOrder(b.stage) - engagementStageOrder(a.stage)
+                  );
+                  return (
+                    <div className={s.cell} key={site}>
+                      {items.map((e) => {
+                        const p = projectMap.get(e.initiativeId);
+                        return (
+                          <Link
+                            key={e.id}
+                            to={`/projects/${e.initiativeId}`}
+                            className={s.chip}
+                            style={{ backgroundColor: stageColor(e.stage) }}
+                            title={`${p?.title ?? e.initiativeId} · ${e.stage} · ${e.status}`}
+                          >
+                            {p?.abbrev ?? "?"}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </RowFragment>
+            ))}
+          </div>
         </div>
+        <div className={s.scrollFade} aria-hidden />
       </div>
       <StageLegend />
     </>
@@ -248,6 +487,7 @@ export function EngagementHeatmap({
   projects: Project[];
 }): JSX.Element {
   const s = useStyles();
+  const isMobile = useIsMobile();
   const projectMap = useProjectMap(projects);
   const matrix = useMemo(() => buildMatrix(engagements), [engagements]);
   const [selected, setSelected] = useState<{ wa: WorkArea; site: Site } | null>(null);
@@ -268,44 +508,100 @@ export function EngagementHeatmap({
 
   const selItems = selected ? (matrix.get(cellKey(selected.wa, selected.site)) ?? []) : [];
 
-  return (
-    <>
-      <div className={s.scroll}>
-        <div className={s.grid} style={{ gridTemplateColumns: gridColumns(SITES.length) }}>
-          <div className={s.corner}>Work Area</div>
-          {SITES.map((site) => (
-            <Link key={site} to={`/sites?site=${encodeURIComponent(site)}`} className={s.colHead} title={SITE_NAMES[site]}>
-              {site}
+  const drillPanel = selected && selItems.length > 0 ? (
+    <div className={s.drill}>
+      <Text size={400} weight="semibold" block>
+        {selected.wa} · {selected.site}{" "}
+        <Text size={200} className={s.muted}>
+          ({SITE_NAMES[selected.site]})
+        </Text>
+      </Text>
+      <div style={{ marginTop: "8px" }}>
+        {selItems
+          .slice()
+          .sort((a, b) => engagementStageOrder(b.stage) - engagementStageOrder(a.stage))
+          .map((e) => (
+            <Link key={e.id} to={`/projects/${e.initiativeId}`} className={s.drillRow}>
+              <div style={{ flexGrow: 1, minWidth: 0 }}>
+                <Text size={300} weight="semibold" block>
+                  {projectMap.get(e.initiativeId)?.title ?? e.initiativeId}
+                </Text>
+                <Text size={200} className={s.muted}>
+                  {e.team} · {e.purpose}
+                </Text>
+              </div>
+              <Text size={200} className={s.muted}>
+                {formatDate(e.startDate)}
+              </Text>
+              <EngagementStageBadge stage={e.stage} />
             </Link>
           ))}
+      </div>
+    </div>
+  ) : (
+    <Text size={200} className={s.muted} style={{ display: "block", marginTop: "12px" }}>
+      Tap a cell to see the initiatives engaging that work area and site.
+    </Text>
+  );
 
-          {WORK_AREAS.map((wa) => (
-            <RowFragment key={wa} workArea={wa}>
-              <div className={s.rowHead}>{wa}</div>
-              {SITES.map((site) => {
-                const n = counts.m.get(cellKey(wa, site)) ?? 0;
-                const alpha = n === 0 ? 0 : 0.16 + 0.84 * (n / counts.max);
-                const isSel = selected?.wa === wa && selected?.site === site;
-                return (
-                  <button
-                    type="button"
-                    key={site}
-                    className={`${s.heatCell}${isSel ? " " + s.heatSelected : ""}`}
-                    style={{
-                      backgroundColor: n === 0 ? "transparent" : `rgba(${HEAT_BASE}, ${alpha})`,
-                      color: alpha > 0.55 ? "#ffffff" : tokens.colorNeutralForeground2,
-                    }}
-                    onClick={() => setSelected(n > 0 ? { wa, site } : null)}
-                    aria-label={`${wa} at ${site}: ${n} initiatives`}
-                    disabled={n === 0}
-                  >
-                    {n > 0 ? n : ""}
-                  </button>
-                );
-              })}
-            </RowFragment>
-          ))}
+  if (isMobile) {
+    return (
+      <>
+        <HeatmapCardList
+          counts={counts}
+          selected={selected}
+          onSelect={(wa, site) =>
+            setSelected((prev) =>
+              prev?.wa === wa && prev?.site === site ? null : { wa, site }
+            )
+          }
+        />
+        {drillPanel}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className={s.scrollWrap}>
+        <div className={s.scroll}>
+          <div className={s.grid} style={{ gridTemplateColumns: gridColumns(SITES.length) }}>
+            <div className={s.corner}>Work Area</div>
+            {SITES.map((site) => (
+              <Link key={site} to={`/sites?site=${encodeURIComponent(site)}`} className={s.colHead} title={SITE_NAMES[site]}>
+                {site}
+              </Link>
+            ))}
+
+            {WORK_AREAS.map((wa) => (
+              <RowFragment key={wa} workArea={wa}>
+                <div className={s.rowHead}>{wa}</div>
+                {SITES.map((site) => {
+                  const n = counts.m.get(cellKey(wa, site)) ?? 0;
+                  const alpha = n === 0 ? 0 : 0.16 + 0.84 * (n / counts.max);
+                  const isSel = selected?.wa === wa && selected?.site === site;
+                  return (
+                    <button
+                      type="button"
+                      key={site}
+                      className={`${s.heatCell}${isSel ? " " + s.heatSelected : ""}`}
+                      style={{
+                        backgroundColor: n === 0 ? "transparent" : `rgba(${HEAT_BASE}, ${alpha})`,
+                        color: alpha > 0.55 ? "#ffffff" : tokens.colorNeutralForeground2,
+                      }}
+                      onClick={() => setSelected(n > 0 ? { wa, site } : null)}
+                      aria-label={`${wa} at ${site}: ${n} initiatives`}
+                      disabled={n === 0}
+                    >
+                      {n > 0 ? n : ""}
+                    </button>
+                  );
+                })}
+              </RowFragment>
+            ))}
+          </div>
         </div>
+        <div className={s.scrollFade} aria-hidden />
       </div>
 
       {selected && selItems.length > 0 ? (
@@ -340,7 +636,7 @@ export function EngagementHeatmap({
         </div>
       ) : (
         <Text size={200} className={s.muted} style={{ display: "block", marginTop: "12px" }}>
-          Tip: click a cell to see the initiatives engaging that work area and site.
+          Click a cell to see the initiatives engaging that work area and site.
         </Text>
       )}
     </>

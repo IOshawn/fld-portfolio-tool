@@ -24,11 +24,11 @@ export type BadgeColor =
 /** RAG colour for a project status. */
 export function statusColor(status: Status): BadgeColor {
   switch (status) {
-    case "Green":
+    case "On Track":
       return "success";
-    case "Amber":
+    case "Off Track":
       return "warning";
-    case "Red":
+    case "At Risk":
       return "danger";
     case "On Hold":
       return "informative";
@@ -42,11 +42,11 @@ export function statusColor(status: Status): BadgeColor {
 /** Hex accent used for roadmap bars (kept off the pure-saturated end). */
 export function statusBarColor(status: Status): string {
   switch (status) {
-    case "Green":
+    case "On Track":
       return "#3d8a4f";
-    case "Amber":
+    case "Off Track":
       return "#c08a1e";
-    case "Red":
+    case "At Risk":
       return "#bc3b3b";
     case "On Hold":
       return "#5b6b8c";
@@ -74,16 +74,12 @@ export function milestoneColor(status: MilestoneStatus): BadgeColor {
   }
 }
 
-/** Ordinal position of a project stage (Idea -> Complete). */
+/** Ordinal position of a project stage (Define -> Implementation). */
 export const STAGE_ORDER: Record<Stage, number> = {
-  Idea: 0,
-  Discovery: 1,
-  Design: 2,
-  Build: 3,
-  Pilot: 4,
-  Scale: 5,
-  Sustain: 6,
-  Complete: 7,
+  "Define": 0,
+  "Pre-Feasability": 1,
+  "Feasability": 2,
+  "Implementation": 3,
 };
 
 // ---------------------------------------------------------------------------

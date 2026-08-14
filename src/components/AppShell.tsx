@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   makeStyles,
@@ -8,17 +9,33 @@ import {
   Badge,
 } from "@fluentui/react-components";
 import { Icon, type IconName } from "./Icon";
+import { PageLoader } from "./PageLoader";
 
-const NAV: { to: string; label: string; shortLabel: string; icon: IconName; end?: boolean; desktopOnly?: boolean }[] = [
-  { to: "/", label: "Home", shortLabel: "Home", icon: "home", end: true },
-  { to: "/roadmap", label: "Portfolio Roadmap", shortLabel: "Roadmap", icon: "roadmap" },
-  { to: "/projects", label: "Projects", shortLabel: "Projects", icon: "projects" },
-  { to: "/engagements", label: "Engagements", shortLabel: "Engage", icon: "engagements" },
-  { to: "/travel", label: "Travel & Roster", shortLabel: "Travel", icon: "travel" },
-  { to: "/sites", label: "Sites", shortLabel: "Sites", icon: "sites" },
-  { to: "/updates", label: "Updates", shortLabel: "Updates", icon: "updates" },
-  { to: "/quarterly", label: "Q3 Summary", shortLabel: "Q3", icon: "quarter" },
-  { to: "/admin", label: "Admin", shortLabel: "Admin", icon: "admin", desktopOnly: true },
+type NavItem = {
+  to: string;
+  label: string;
+  shortLabel: string;
+  icon: IconName;
+  end?: boolean;
+  desktopOnly?: boolean;
+  prefetch: () => void;
+};
+
+/** Call the dynamic import once; subsequent calls are no-ops (module is cached). */
+function prefetchRoute(importer: () => Promise<unknown>): () => void {
+  return () => { importer().catch(() => { /* ignore prefetch errors */ }); };
+}
+
+const NAV: NavItem[] = [
+  { to: "/",           label: "Home",             shortLabel: "Home",    icon: "home",        end: true,  prefetch: prefetchRoute(() => import("../pages/HomePage")) },
+  { to: "/roadmap",    label: "Portfolio Roadmap", shortLabel: "Roadmap", icon: "roadmap",               prefetch: prefetchRoute(() => import("../pages/RoadmapPage")) },
+  { to: "/projects",   label: "Projects",          shortLabel: "Projects",icon: "projects",              prefetch: prefetchRoute(() => import("../pages/ProjectsPage")) },
+  { to: "/engagements",label: "Engagements",       shortLabel: "Engage",  icon: "engagements",           prefetch: prefetchRoute(() => import("../pages/EngagementsPage")) },
+  { to: "/travel",     label: "Travel & Roster",   shortLabel: "Travel",  icon: "travel",                prefetch: prefetchRoute(() => import("../pages/TravelPage")) },
+  { to: "/sites",      label: "Sites",             shortLabel: "Sites",   icon: "sites",                 prefetch: prefetchRoute(() => import("../pages/SitesPage")) },
+  { to: "/updates",    label: "Updates",           shortLabel: "Updates", icon: "updates",               prefetch: prefetchRoute(() => import("../pages/UpdatesPage")) },
+  { to: "/quarterly",  label: "Q3 Summary",        shortLabel: "Q3",      icon: "quarter",               prefetch: prefetchRoute(() => import("../pages/QuarterlyPage")) },
+  { to: "/admin",      label: "Admin",             shortLabel: "Admin",   icon: "admin",  desktopOnly: true, prefetch: prefetchRoute(() => import("../pages/AdminPage")) },
 ];
 
 const useStyles = makeStyles({
@@ -208,6 +225,8 @@ export function AppShell(): JSX.Element {
               className={({ isActive }) =>
                 mergeClasses(s.navItem, isActive && s.navItemActive)
               }
+              onMouseEnter={item.prefetch}
+              onFocus={item.prefetch}
             >
               <Icon name={item.icon} size={20} />
               <span>{item.label}</span>
@@ -225,7 +244,9 @@ export function AppShell(): JSX.Element {
       {/* Page content */}
       <main className={s.main}>
         <div className={s.content}>
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
 
@@ -239,6 +260,8 @@ export function AppShell(): JSX.Element {
             className={({ isActive }) =>
               mergeClasses(s.bottomNavItem, isActive && s.bottomNavItemActive)
             }
+            onMouseEnter={item.prefetch}
+            onFocus={item.prefetch}
           >
             <Icon name={item.icon} size={22} />
             <span className={s.bottomNavLabel}>{item.shortLabel}</span>

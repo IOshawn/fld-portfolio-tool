@@ -9,6 +9,7 @@
 import type {
   PortfolioData,
   Project,
+  ProjectStage,
   Milestone,
   Engagement,
   ProjectUpdate,
@@ -21,7 +22,9 @@ import type {
   WorkArea,
   EngagementStage,
   EngagementStatus,
+  PersonRef,
 } from "../types/models";
+import type { QuarterlyMilestone, PortfolioArea } from "../types/quarterly";
 
 /** Payload for submitting a project update via the Update experience. */
 export interface NewProjectUpdate {
@@ -30,7 +33,7 @@ export interface NewProjectUpdate {
   summary: string;
   risks: string;
   decisionsRequired: string;
-  submittedBy: string;
+  submittedBy: PersonRef;
   newStatus?: Status;
   newStage?: Stage;
 }
@@ -45,6 +48,28 @@ export interface MilestoneInput {
   notes: string;
 }
 
+/** All fields required to create a new project / initiative. */
+export interface ProjectInput {
+  title: string;
+  abbrev: string;
+  portfolio: string;
+  productArea: string;
+  owner: PersonRef;
+  sponsor: PersonRef;
+  stage: Stage;
+  status: Status;
+  startDate: string;
+  endDate: string;
+  summary: string;
+  outcomeStatement: string;
+  businessValue: string;
+  dependencies: string[];
+  fundingSource: string;
+  nOrPCode: string;
+  sites: Site[];
+  projectStages: Array<Omit<ProjectStage, "id" | "projectId">>;
+}
+
 /** Editable core fields of an initiative (all optional except id). */
 export interface ProjectEdit {
   id: string;
@@ -52,8 +77,8 @@ export interface ProjectEdit {
   abbrev?: string;
   portfolio?: string;
   productArea?: string;
-  owner?: string;
-  sponsor?: string;
+  owner?: PersonRef;
+  sponsor?: PersonRef;
   stage?: Stage;
   status?: Status;
   startDate?: string;
@@ -63,7 +88,9 @@ export interface ProjectEdit {
   businessValue?: string;
   dependencies?: string[];
   fundingSource?: string;
-  projectCode?: string;
+  nOrPCode?: string;
+  sites?: Site[];
+  projectStages?: ProjectStage[];
 }
 
 /** Payload for creating or editing an engagement (portfolio is derived). */
@@ -84,7 +111,7 @@ export interface EngagementInput {
 /** Payload for creating or editing a travel entry. */
 export interface TravelEntryInput {
   id?: string;
-  person: string;
+  person: PersonRef;
   initiativeId: string;
   site: Site;
   workArea: WorkArea;
@@ -95,6 +122,24 @@ export interface TravelEntryInput {
   description: string;
   status: TravelStatus;
   associatedWith: string[];
+}
+
+/** Payload for creating or updating a quarterly milestone. */
+export interface QuarterlyMilestoneInput {
+  /** Omit (or pass undefined) to create; provide to update. */
+  id?: string;
+  portfolioArea: PortfolioArea;
+  subGroup?: string;
+  initiative: string;
+  initiativeDescription?: string;
+  milestone: string;
+  /**
+   * ISO YYYY-MM-DD sort key. For ranges / vague periods use the period's last day.
+   */
+  targetDate: string;
+  /** Human-readable label that overrides the formatted date in chips. */
+  dateLabel?: string;
+  notes?: string;
 }
 
 export interface PortfolioRepository {
@@ -116,6 +161,9 @@ export interface PortfolioRepository {
   /** Create (no id) or update (with id) an engagement. */
   upsertEngagement(input: EngagementInput): Promise<Engagement>;
 
+  /** Create a brand-new initiative and add it to the portfolio. */
+  createProject(input: ProjectInput): Promise<Project>;
+
   /** Edit core fields of an existing initiative (owner, portfolio, etc.). */
   updateProject(input: ProjectEdit): Promise<Project>;
 
@@ -133,4 +181,15 @@ export interface PortfolioRepository {
 
   /** Delete a milestone by id. */
   deleteMilestone(id: string): Promise<void>;
+
+  // ── Quarterly Milestones ──────────────────────────────────────────────────
+
+  /** Return all quarterly milestone records (from seed JSON in mock, SQL in Functions). */
+  getQuarterlyMilestones(): Promise<QuarterlyMilestone[]>;
+
+  /** Create (no id) or update (with id) a quarterly milestone. */
+  upsertQuarterlyMilestone(input: QuarterlyMilestoneInput): Promise<QuarterlyMilestone>;
+
+  /** Delete a quarterly milestone by id. */
+  deleteQuarterlyMilestone(id: string): Promise<void>;
 }

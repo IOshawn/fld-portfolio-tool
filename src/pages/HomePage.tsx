@@ -1,13 +1,17 @@
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { makeStyles, shorthands, tokens, Text, Button } from "@fluentui/react-components";
+import { makeStyles, shorthands, tokens, Text, Button, Badge } from "@fluentui/react-components";
 import { PageHeader } from "../components/PageHeader";
 import { PortfolioGate } from "../components/PortfolioGate";
 import { SectionCard, StatCard } from "../components/cards";
 import { BarList } from "../components/BarList";
 import { MilestoneListItem, EngagementListItem, ProjectMiniRow } from "../components/lists";
 import { RoadmapTimeline } from "../components/RoadmapTimeline";
-import type { PortfolioData } from "../types/models";
-import { SITE_NAMES } from "../types/models";
+import { Icon } from "../components/Icon";
+import type { PortfolioData, PersonRef } from "../types/models";
+import { SITE_NAMES, toPersonRef, personName } from "../types/models";
+import { usePersonTravelAlerts } from "../hooks/usePersonTravelAlerts";
+import { readDismissed, writeDismissed } from "../lib/travelAlertDismissals";
 import {
   projectsByStage,
   projectsByStatus,
@@ -56,7 +60,182 @@ const useStyles = makeStyles({
   actName: { fontWeight: 600 },
   actSub: { color: tokens.colorNeutralForeground3 },
   actCount: { fontVariantNumeric: "tabular-nums", color: tokens.colorNeutralForeground2, whiteSpace: "nowrap" },
+  travelRow: {
+    display: "flex",
+    alignItems: "center",
+    columnGap: "12px",
+    ...shorthands.padding("9px", "4px"),
+    ...shorthands.borderBottom("1px", "solid", tokens.colorNeutralStroke3),
+    ":last-child": { ...shorthands.borderBottom("0") },
+  },
+  travelPerson: { fontWeight: 600, flexShrink: 0 },
+  travelMeta: { color: tokens.colorNeutralForeground3, flexGrow: 1, minWidth: 0 },
 });
+
+/** Returns the date string 7 days from today in YYYY-MM-DD format. */
+function sevenDaysFromNow(): string {
+  const d = new Date(todayISO());
+  d.setDate(d.getDate() + 7);
+  return d.toISOString().slice(0, 10);
+}
+
+function travelStatusColor(status: string): "success" | "informative" {
+  return status === "Booked" ? "success" : "informative";
+}
+
+function UpcomingTravelSection({ data }: { data: PortfolioData }): JSX.Element | null {
+  const s = useStyles();
+  const today = todayISO();
+  const cutoff = sevenDaysFromNow();
+
+  const upcoming = useMemo(
+    () =>
+      data.travelEntries
+        .filter((e) => e.departureDate >= today && e.departureDate <= cutoff)
+        .sort((a, b) => a.departureDate.localeCompare(b.departureDate))
+        .slice(0, 5),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data.travelEntries]
+  );
+
+  if (upcoming.length === 0) return null;
+
+  return (
+    <div style={{ marginBottom: "20px" }}>
+      <SectionCard
+        title="Upcoming travel · next 7 days"
+        icon="travel"
+        action={
+          <Link to="/travel" style={{ textDecoration: "none" }}>
+            <Button appearance="subtle" size="small">View all</Button>
+          </Link>
+        }
+        flush
+      >
+        <div style={{ padding: "0 20px 8px" }}>
+          {upcoming.map((entry) => (
+            <div key={entry.id} className={s.travelRow}>
+              <span style={{ flexShrink: 0, color: tokens.colorBrandForeground2 }}>
+                <Icon name="plane" size={14} />
+              </span>
+              <Text size={300} className={s.travelPerson}>
+                {personName(entry.person)}
+              </Text>
+              <Text size={200} className={s.travelMeta}>
+                → {entry.site} · {formatDate(entry.departureDate)}
+              </Text>
+              <Badge
+                appearance="tint"
+                color={travelStatusColor(entry.status)}
+                shape="rounded"
+                size="small"
+              >
+                {entry.status}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+// Separate component so hooks rules are satisfied
+function TravelAlertsList({ data }: { data: PortfolioData }): JSX.Element | null {
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(readDismissed);
+
+  const activeProjects = useMemo(
+    () => data.projects.filter((p) => p.status !== "Complete"),
+    [data.projects]
+  );
+
+  // Build a single persons map for the hook
+  const personsMap = useMemo(() => {
+    const map: Record<string, PersonRef> = {};
+    for (const p of activeProjects) {
+      const owner = toPersonRef(p.owner);
+      const sponsor = toPersonRef(p.sponsor);
+      if (owner.name) map[`owner-${p.id}`] = owner;
+      if (sponsor.name) map[`sponsor-${p.id}`] = sponsor;
+    }
+    return map;
+  }, [activeProjects]);
+
+  const rawAlerts = usePersonTravelAlerts(personsMap, data.travelEntries);
+
+  // Enrich alerts with project context
+  // role key format passed to the hook is `owner-{projectId}` or `sponsor-{projectId}`
+  const enriched = useMemo(() => {
+    return rawAlerts.map((a) => {
+      const parts = a.role.split("-");
+      const pRole = parts[0]; // "owner" or "sponsor"
+      const pId = parts.slice(1).join("-"); // rest is the project id
+      const project = activeProjects.find((p) => p.id === pId);
+      return { ...a, pRole, project };
+    }).filter((a) => a.project);
+  }, [rawAlerts, activeProjects]);
+
+  const visibleAlerts = enriched.filter((a) => !dismissedIds.has(a.entry.id));
+
+  function dismissAll(): void {
+    const next = new Set(dismissedIds);
+    for (const a of visibleAlerts) next.add(a.entry.id);
+    writeDismissed(next);
+    setDismissedIds(next);
+  }
+
+  if (visibleAlerts.length === 0) return null;
+
+  return (
+    <SectionCard
+      title={`Travel alerts (${visibleAlerts.length})`}
+      icon="travel"
+      action={
+        <Button appearance="subtle" size="small" onClick={dismissAll}>
+          Dismiss all
+        </Button>
+      }
+    >
+      <div style={{ padding: "4px 16px 12px" }}>
+        {visibleAlerts.map((a, i) => (
+          <div key={i} style={{
+            display: "flex",
+            alignItems: "flex-start",
+            columnGap: "10px",
+            padding: "8px 0",
+            borderBottom: i < visibleAlerts.length - 1 ? `1px solid ${tokens.colorNeutralStroke3}` : "none",
+          }}>
+            <span style={{ marginTop: "3px", flexShrink: 0, color: tokens.colorBrandForeground2 }}>
+                <Icon name="plane" size={14} />
+              </span>
+            <div style={{ minWidth: 0, flexGrow: 1 }}>
+              <Text size={300} weight="semibold" block>
+                {a.person.name}
+              </Text>
+              <Text size={200} style={{ color: tokens.colorNeutralForeground3 }} block>
+                {a.pRole} on{" "}
+                <Link to={`/projects/${a.project!.id}`} style={{ color: tokens.colorBrandForeground1 }}>
+                  {a.project!.title}
+                </Link>
+                {" "}· travelling to {a.entry.site} {formatDate(a.entry.departureDate)}–{formatDate(a.entry.returnDate)}
+              </Text>
+            </div>
+            {a.person.email && (
+              <a
+                href={`mailto:${a.person.email}`}
+                style={{ flexShrink: 0, textDecoration: "none" }}
+              >
+                <Badge appearance="tint" color="brand" shape="rounded" size="small">
+                  Email
+                </Badge>
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
 
 function HomeContent({ data }: { data: PortfolioData }): JSX.Element {
   const s = useStyles();
@@ -65,7 +244,7 @@ function HomeContent({ data }: { data: PortfolioData }): JSX.Element {
 
   const titleOf = (id: string) => projects.find((p) => p.id === id)?.title ?? id;
 
-  const inDelivery = projects.filter((p) => ["Build", "Pilot", "Scale"].includes(p.stage)).length;
+  const inDelivery = projects.filter((p) => p.stage === "Implementation").length;
   const attention = initiativesRequiringAttention(projects, engagements);
   const recent = recentlyUpdated(projects, 6);
   const upMilestones = upcomingMilestones(milestones, 6);
@@ -101,7 +280,7 @@ function HomeContent({ data }: { data: PortfolioData }): JSX.Element {
 
       <div className={s.statGrid}>
         <StatCard label="Initiatives" value={projects.length} accentColor={STAGE_BAR} />
-        <StatCard label="In delivery" value={inDelivery} hint="Build, Pilot or Scale" accentColor="#3d8a4f" />
+        <StatCard label="In delivery" value={inDelivery} hint="In Implementation" accentColor="#3d8a4f" />
         <StatCard label="Needs attention" value={attention.length} hint="At-risk or on-hold" accentColor="#bc3b3b" />
         <StatCard label="Sites engaged" value={activeSites(engagements).length} hint="Across all engagements" accentColor="#2f9e8f" />
       </div>
@@ -122,6 +301,10 @@ function HomeContent({ data }: { data: PortfolioData }): JSX.Element {
           </div>
         </SectionCard>
       </div>
+
+      <TravelAlertsList data={data} />
+
+      <UpcomingTravelSection data={data} />
 
       <div className={s.mainGrid}>
         <div className={s.col}>

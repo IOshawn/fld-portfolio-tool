@@ -4,8 +4,10 @@
  * Clicking a bar opens the TravelEntryForm for editing.
  */
 import { useState, useMemo } from "react";
-import { makeStyles, shorthands, tokens, Text, Button } from "@fluentui/react-components";
+import { makeStyles, shorthands, tokens, Text, Button, Badge, Tooltip } from "@fluentui/react-components";
 import type { TravelEntry, Project } from "../types/models";
+import { personName, toPersonRef } from "../types/models";
+import { projectsForPerson } from "../hooks/usePersonTravelAlerts";
 import { Icon } from "./Icon";
 
 // ── Palette — one colour per unique person (cycles) ──────────────────────────
@@ -21,10 +23,8 @@ const PERSON_PALETTE = [
 ];
 
 const STATUS_ALPHA: Record<TravelEntry["status"], string> = {
-  Planned: "dd",
-  Travelling: "ff",
-  Returned: "66",
-  Cancelled: "44",
+  Planned: "99",
+  Booked:  "ff",
 };
 
 const useStyles = makeStyles({
@@ -123,6 +123,10 @@ const useStyles = makeStyles({
       boxShadow: tokens.shadow4,
     },
   },
+  barLinked: {
+    // Inset white border signals that this trip is grouped with others
+    boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.65)",
+  },
   barLabel: {
     fontSize: "10px",
     fontWeight: 600,
@@ -130,6 +134,14 @@ const useStyles = makeStyles({
     whiteSpace: "nowrap" as const,
     textOverflow: "ellipsis",
     ...shorthands.overflow("hidden"),
+  },
+  linkDot: {
+    width: "6px",
+    height: "6px",
+    ...shorthands.borderRadius("50%"),
+    backgroundColor: "rgba(255,255,255,0.8)",
+    flexShrink: 0,
+    marginLeft: "auto",
   },
   empty: {
     ...shorthands.padding("40px"),
@@ -179,7 +191,7 @@ interface Props {
   onEdit: (entry: TravelEntry) => void;
 }
 
-export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
+export function TravelCalendar({ entries, projects, onEdit }: Props): JSX.Element {
   const s = useStyles();
 
   const now = new Date();
@@ -192,11 +204,31 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
 
   // Build a colour map per person (keyed across ALL entries so colours stay consistent)
   const personColorMap = useMemo(() => {
-    const people = [...new Set(entries.map((e) => e.person))].sort();
+    const people = [...new Set(entries.map((e) => personName(e.person)))].sort();
     const map = new Map<string, string>();
     people.forEach((p, i) => map.set(p, PERSON_PALETTE[i % PERSON_PALETTE.length]));
     return map;
   }, [entries]);
+
+  // Active projects for cross-reference
+  const activeProjects = useMemo(
+    () => projects.filter((p) => p.status !== "Complete"),
+    [projects]
+  );
+
+  // Build a map from person name → impacted projects (owner/sponsor on active projects)
+  // Uses the first entry per person to get a full PersonRef
+  const personImpactMap = useMemo(() => {
+    const map = new Map<string, Array<{ id: string; title: string; role: string }>>();
+    for (const entry of entries) {
+      const name = personName(entry.person);
+      if (!map.has(name)) {
+        const ref = toPersonRef(entry.person);
+        map.set(name, projectsForPerson(ref, activeProjects));
+      }
+    }
+    return map;
+  }, [entries, activeProjects]);
 
   // Filter entries visible in this month
   const monthStart = isoDate(year, month, 1);
@@ -209,7 +241,7 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
 
   // Group by person — only show people with trips this month
   const people = useMemo(
-    () => [...new Set(visibleEntries.map((e) => e.person))].sort(),
+    () => [...new Set(visibleEntries.map((e) => personName(e.person)))].sort(),
     [visibleEntries]
   );
 
@@ -271,11 +303,40 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
               </tr>
             ) : (
               people.map((person) => {
-                const personEntries = visibleEntries.filter((e) => e.person === person);
+                const personEntries = visibleEntries.filter((e) => personName(e.person) === person);
                 const color = personColorMap.get(person) ?? PERSON_PALETTE[0];
+                const impactedProjects = personImpactMap.get(person) ?? [];
                 return (
                   <tr key={person}>
-                    <td className={s.personLabel} title={person}>{person}</td>
+                    <td className={s.personLabel} title={person}>
+                      <div style={{ display: "flex", alignItems: "center", columnGap: "4px", flexWrap: "wrap" }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person}</span>
+                        {impactedProjects.length > 0 && (
+                          <Tooltip
+                            content={
+                              <div>
+                                <strong>Project impact:</strong>
+                                <ul style={{ margin: "4px 0 0 0", paddingLeft: "16px" }}>
+                                  {impactedProjects.map((p) => (
+                                    <li key={p.id}>{p.title} ({p.role})</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            }
+                            relationship="label"
+                          >
+                            <Badge
+                              appearance="tint"
+                              color="warning"
+                              size="small"
+                              shape="rounded"
+                            >
+                              {impactedProjects.length} project{impactedProjects.length > 1 ? "s" : ""}
+                            </Badge>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </td>
                     {days.map((d) => {
                       const dayIso = isoDate(year, month, d);
                       const dow = new Date(year, month, d).getDay();
@@ -296,6 +357,11 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
                       const statusAlpha = entry ? STATUS_ALPHA[entry.status] : "ff";
                       const barColor = color + statusAlpha;
 
+                      const isLinked = (entry?.associatedWith?.length ?? 0) > 0;
+                      const linkedTip = isLinked
+                        ? ` · travelling with ${entry!.associatedWith.length} other${entry!.associatedWith.length > 1 ? "s" : ""}`
+                        : "";
+
                       return (
                         <td
                           key={d}
@@ -303,10 +369,10 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
                         >
                           {entry ? (
                             <div
-                              className={s.bar}
+                              className={`${s.bar} ${isLinked ? s.barLinked : ""}`}
                               style={{ backgroundColor: barColor }}
                               onClick={() => onEdit(entry)}
-                              title={`${entry.person} — ${entry.site} (${entry.status})${entry.flightNumber ? " · " + entry.flightNumber : ""}`}
+                              title={`${personName(entry.person)} — ${entry.site} (${entry.status})${entry.flightNumber ? " · " + entry.flightNumber : ""}${linkedTip}`}
                             >
                               {isStart ? (
                                 <span className={s.barLabel}>
@@ -314,6 +380,7 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
                                   {entry.flightNumber ? ` · ${entry.flightNumber}` : ""}
                                 </span>
                               ) : null}
+                              {isLinked ? <span className={s.linkDot} /> : null}
                             </div>
                           ) : null}
                         </td>
@@ -339,6 +406,32 @@ export function TravelCalendar({ entries, onEdit }: Props): JSX.Element {
               {person}
             </div>
           ))}
+          {/* Grouping cue explanation */}
+          <div className={s.legendItem} style={{ marginLeft: "auto", opacity: 0.75 }}>
+            <div
+              style={{
+                width: "24px",
+                height: "10px",
+                borderRadius: "3px",
+                backgroundColor: "#2f5e9e",
+                boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.65)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                paddingRight: "2px",
+              }}
+            >
+              <span
+                style={{
+                  width: "4px",
+                  height: "4px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                }}
+              />
+            </div>
+            <span style={{ fontSize: "10px" }}>Linked trip</span>
+          </div>
         </div>
       ) : null}
     </div>

@@ -4,8 +4,12 @@
  * Renders a searchable dropdown of portfolio projects. Selected projects
  * appear as dismissible tag chips above the input. The currently-edited
  * project is excluded from the option list.
+ *
+ * Cycle detection: a soft warning is shown when the current selection would
+ * create a circular dependency chain. Saving is still allowed.
  */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { PORTFOLIO_SHORT_NAMES } from "../types/models";
 import {
   makeStyles,
   shorthands,
@@ -104,6 +108,11 @@ const useStyles = makeStyles({
     fontWeight: 500,
     maxWidth: "220px",
   },
+  chipCyclic: {
+    ...shorthands.border("1px", "solid", tokens.colorStatusWarningBorder1),
+    backgroundColor: tokens.colorStatusWarningBackground1,
+    color: tokens.colorStatusWarningForeground1,
+  },
   chipLabel: {
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -122,7 +131,77 @@ const useStyles = makeStyles({
     padding: 0,
     lineHeight: 1,
   },
+  chipRemoveCyclic: {
+    color: tokens.colorStatusWarningForeground1,
+    ":hover": { color: tokens.colorStatusDangerForeground1 },
+  },
+  cycleWarning: {
+    display: "flex",
+    alignItems: "flex-start",
+    columnGap: "6px",
+    ...shorthands.padding("8px", "10px"),
+    ...shorthands.borderRadius("6px"),
+    ...shorthands.border("1px", "solid", tokens.colorStatusWarningBorder1),
+    backgroundColor: tokens.colorStatusWarningBackground1,
+    color: tokens.colorStatusWarningForeground1,
+    fontSize: "12px",
+    lineHeight: "1.4",
+  },
+  cycleWarningIcon: {
+    flexShrink: 0,
+    marginTop: "1px",
+  },
 });
+
+// ─── Cycle detection ─────────────────────────────────────────────────────────
+
+/**
+ * Returns the set of selected dependency IDs that would create a circular
+ * dependency if the current project depended on them.
+ *
+ * A cycle is detected when following a dependency's own dependency chain
+ * eventually reaches the current project being edited.
+ *
+ * Dependencies in project data may be stored as IDs or legacy titles, so
+ * resolution tries both.
+ */
+function findCyclicDeps(
+  currentProjectId: string,
+  selected: string[],
+  projects: Project[]
+): Set<string> {
+  if (!currentProjectId) return new Set();
+
+  const byId = new Map(projects.map((p) => [p.id, p]));
+  const byTitle = new Map(projects.map((p) => [p.title.toLowerCase(), p]));
+
+  function resolve(dep: string): Project | undefined {
+    return byId.get(dep) ?? byTitle.get(dep.toLowerCase());
+  }
+
+  function canReach(fromId: string, targetId: string, visited: Set<string>): boolean {
+    if (fromId === targetId) return true;
+    if (visited.has(fromId)) return false;
+    visited.add(fromId);
+    const proj = byId.get(fromId);
+    if (!proj) return false;
+    for (const dep of proj.dependencies) {
+      const resolved = resolve(dep);
+      if (resolved && canReach(resolved.id, targetId, visited)) return true;
+    }
+    return false;
+  }
+
+  const cyclic = new Set<string>();
+  for (const depId of selected) {
+    if (canReach(depId, currentProjectId, new Set())) {
+      cyclic.add(depId);
+    }
+  }
+  return cyclic;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 interface Props {
   /** All portfolio projects to pick from. */
@@ -153,6 +232,12 @@ export function DependencyPicker({ projects, currentProjectId, selected, onChang
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Detect which selected deps form a cycle
+  const cyclicIds = useMemo(
+    () => findCyclicDeps(currentProjectId, selected, projects),
+    [currentProjectId, selected, projects]
+  );
+
   const options = projects.filter(
     (p) =>
       p.id !== currentProjectId &&
@@ -176,25 +261,51 @@ export function DependencyPicker({ projects, currentProjectId, selected, onChang
     .map((id) => projects.find((p) => p.id === id))
     .filter((p): p is Project => p !== undefined);
 
+  const cyclicProjects = selectedProjects.filter((p) => cyclicIds.has(p.id));
+
   return (
     <div className={s.root}>
       {selectedProjects.length > 0 && (
         <div className={s.chips}>
-          {selectedProjects.map((p) => (
-            <span key={p.id} className={s.chip}>
-              <span className={s.chipLabel} title={p.title}>
-                {p.abbrev} · {p.title}
-              </span>
-              <button
-                type="button"
-                className={s.chipRemove}
-                onClick={() => removeProject(p.id)}
-                aria-label={`Remove ${p.title}`}
+          {selectedProjects.map((p) => {
+            const isCyclic = cyclicIds.has(p.id);
+            return (
+              <span
+                key={p.id}
+                className={`${s.chip}${isCyclic ? ` ${s.chipCyclic}` : ""}`}
+                title={isCyclic ? `⚠ Circular dependency: ${p.title} already depends on this project` : p.title}
               >
-                <Icon name="close" size={12} />
-              </button>
-            </span>
-          ))}
+                <span className={s.chipLabel}>
+                  {isCyclic && "⚠ "}
+                  {p.abbrev} · {p.title}
+                </span>
+                <button
+                  type="button"
+                  className={`${s.chipRemove}${isCyclic ? ` ${s.chipRemoveCyclic}` : ""}`}
+                  onClick={() => removeProject(p.id)}
+                  aria-label={`Remove ${p.title}`}
+                >
+                  <Icon name="close" size={12} />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {cyclicProjects.length > 0 && (
+        <div className={s.cycleWarning} role="alert">
+          <span className={s.cycleWarningIcon}>
+            <Icon name="warning" size={14} />
+          </span>
+          <Text size={200}>
+            <strong>Circular {cyclicProjects.length === 1 ? "dependency" : "dependencies"} detected</strong>
+            {" — "}
+            {cyclicProjects.length === 1
+              ? `"${cyclicProjects[0].title}" already depends on this project, creating a cycle.`
+              : `${cyclicProjects.map((p) => `"${p.title}"`).join(", ")} already depend on this project, creating cycles.`}
+            {" "}You can still save, but circular dependencies may cause confusion in the dependency graph.
+          </Text>
         </div>
       )}
 
@@ -231,7 +342,7 @@ export function DependencyPicker({ projects, currentProjectId, selected, onChang
                   }}
                 >
                   <span className={s.optionTitle}>{p.title}</span>
-                  <span className={s.optionAbbrev}>{p.abbrev} · {p.portfolio}</span>
+                  <span className={s.optionAbbrev}>{p.abbrev} · {(PORTFOLIO_SHORT_NAMES as Record<string, string>)[p.portfolio] ?? p.portfolio}</span>
                 </div>
               ))
             )}

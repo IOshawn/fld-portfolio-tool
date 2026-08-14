@@ -1,7 +1,7 @@
 [
   {
     "id": "qm-ep-2",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "e-Permitting",
     "milestone": "Yandi Test Deployment",
     "targetDate": "2026-08-17",
@@ -10,7 +10,7 @@
   },
   {
     "id": "qm-ep-3",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "e-Permitting",
     "milestone": "HD4 & Yandi Implementation",
     "targetDate": "2026-12-31",
@@ -20,7 +20,7 @@
 
   {
     "id": "qm-ca-1",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "Contractor Access",
     "milestone": "Go/No-Go Stage Gate",
     "targetDate": "2026-07-31",
@@ -30,7 +30,7 @@
 
   {
     "id": "qm-dwm-1",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "Digital Work Management",
     "milestone": "GDI Concept Testing",
     "targetDate": "2026-10-31",
@@ -39,7 +39,7 @@
   },
   {
     "id": "qm-dwm-3",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "Digital Work Management",
     "milestone": "Go/No-Go Stage Gate",
     "targetDate": "2026-11-30",
@@ -49,7 +49,7 @@
 
   {
     "id": "qm-cat3-1",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "CAT3 Labour Management",
     "milestone": "SteerCo Endorsement of Preferred Option",
     "targetDate": "2026-07-31",
@@ -58,7 +58,7 @@
   },
   {
     "id": "qm-cat3-2",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "CAT3 Labour Management",
     "milestone": "Secure Funding",
     "targetDate": "2026-08-31",
@@ -67,7 +67,7 @@
   },
   {
     "id": "qm-cat3-3",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "CAT3 Labour Management",
     "milestone": "Start Implementation",
     "targetDate": "2026-10-01",
@@ -77,7 +77,7 @@
 
   {
     "id": "qm-rsm-1",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "Rolling Stock Maintenance Work Management",
     "milestone": "Phase 1 Deployment",
     "targetDate": "2026-07-18",
@@ -86,7 +86,7 @@
   },
   {
     "id": "qm-rsm-2",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "Rolling Stock Maintenance Work Management",
     "milestone": "RFI Evaluations for Phase 2",
     "targetDate": "2026-07-31",
@@ -95,7 +95,7 @@
   },
   {
     "id": "qm-rsm-3",
-    "portfolioArea": "Frontline Maintenance",
+    "portfolioArea": "Maintenance & Work Management",
     "initiative": "Rolling Stock Maintenance Work Management",
     "milestone": "Phase 2 Implementation",
     "targetDate": "2027-03-31",
@@ -216,7 +216,7 @@
 
   {
     "id": "qm-sdwg-1",
-    "portfolioArea": "Frontline HSE",
+    "portfolioArea": "Workforce Safety",
     "initiative": "Safety Digital Working Group",
     "initiativeDescription": "Coordinate, triage and progress digital safety initiatives",
     "milestone": "Coordinate, triage and progress digital safety initiatives",
@@ -226,7 +226,7 @@
   },
   {
     "id": "qm-sa-1",
-    "portfolioArea": "Frontline HSE",
+    "portfolioArea": "Workforce Safety",
     "initiative": "Safety Agent",
     "initiativeDescription": "Safety Agent concept cases and data sources",
     "milestone": "Concept",
@@ -237,7 +237,7 @@
 
   {
     "id": "qm-hc-1",
-    "portfolioArea": "Frontline HSE",
+    "portfolioArea": "Workforce Safety",
     "initiative": "HydroChart",
     "initiativeDescription": "Hydrogeological data and visualisation",
     "milestone": "Deployed to Production — Mine Water Management",
@@ -247,7 +247,7 @@
   },
   {
     "id": "qm-drippy-1",
-    "portfolioArea": "Frontline HSE",
+    "portfolioArea": "Workforce Safety",
     "initiative": "Drippy Water Management Assistant",
     "initiativeDescription": "User support with water data, insights and platform navigation",
     "milestone": "Phase 1 Release",
@@ -258,7 +258,7 @@
 
   {
     "id": "qm-sh-1",
-    "portfolioArea": "Frontline People & AI",
+    "portfolioArea": "Performance & Experience Enablement",
     "initiative": "Shift Handover",
     "milestone": "Pilbara Operation Production Deployment",
     "targetDate": "2026-09-30",
@@ -267,7 +267,7 @@
   },
   {
     "id": "qm-pi-1",
-    "portfolioArea": "Frontline People & AI",
+    "portfolioArea": "Performance & Experience Enablement",
     "initiative": "Performance Insights",
     "milestone": "Daily Insights to Production",
     "targetDate": "2026-07-28",
@@ -276,7 +276,7 @@
   },
   {
     "id": "qm-pi-2",
-    "portfolioArea": "Frontline People & AI",
+    "portfolioArea": "Performance & Experience Enablement",
     "initiative": "Performance Insights",
     "milestone": "Weekly Insights Prototype",
     "targetDate": "2026-08-29",
@@ -285,7 +285,7 @@
   },
   {
     "id": "qm-ict-1",
-    "portfolioArea": "Frontline People & AI",
+    "portfolioArea": "Performance & Experience Enablement",
     "initiative": "Integrated Cadence Tool",
     "milestone": "Phase 1 Site Deployment",
     "targetDate": "2026-09-30",
@@ -294,11 +294,42 @@
   },
   {
     "id": "qm-sps-1",
-    "portfolioArea": "Frontline People & AI",
+    "portfolioArea": "Performance & Experience Enablement",
     "initiative": "SPS Digital Tools",
     "milestone": "Handover and clone for RTIO",
     "targetDate": "2026-09-30",
     "dateLabel": "Q3",
     "notes": "SPS Digital Tools handed over and cloned for Rio Tinto Iron Ore operations."
+  },
+
+  {
+    "id": "qm-digby-1",
+    "portfolioArea": "Frontline",
+    "initiative": "DIGBY",
+    "initiativeDescription": "Digital control-room assistant for load-out and train scheduling",
+    "milestone": "Design Sign-off",
+    "targetDate": "2026-09-30",
+    "dateLabel": "Sep",
+    "notes": "Design phase complete and signed off by Control Room Digital stakeholders; solution architecture locked for build."
+  },
+  {
+    "id": "qm-digby-2",
+    "portfolioArea": "Frontline",
+    "initiative": "DIGBY",
+    "initiativeDescription": "Digital control-room assistant for load-out and train scheduling",
+    "milestone": "Prototype Build",
+    "targetDate": "2026-11-30",
+    "dateLabel": "Nov",
+    "notes": "Core assistant prototype built, covering standard train-scheduling responses and load-out guidance."
+  },
+  {
+    "id": "qm-digby-3",
+    "portfolioArea": "Frontline",
+    "initiative": "DIGBY",
+    "initiativeDescription": "Digital control-room assistant for load-out and train scheduling",
+    "milestone": "Operator Pilot",
+    "targetDate": "2027-03-31",
+    "dateLabel": "Q1 2027",
+    "notes": "Live pilot with control-room operators at first site; usability feedback gathered for full rollout planning."
   }
 ]

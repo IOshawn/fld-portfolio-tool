@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, createContext, useContext } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect, createContext, useContext } from "react";
 import { makeStyles, shorthands, tokens, Text, Tooltip, Button } from "@fluentui/react-components";
 import { PageHeader } from "../components/PageHeader";
 import { SectionCard } from "../components/cards";
@@ -11,9 +11,8 @@ import {
   type QuarterlyMilestone,
 } from "../types/quarterly";
 import { QuarterlyExportView } from "../components/QuarterlyExportView";
-import rawData from "../data/quarterlyMilestones.json";
+import { repository } from "../services";
 
-const milestones = rawData as QuarterlyMilestone[];
 const quarter = currentQuarter();
 
 /** Stable key for an initiative (used for both toggle state and text overrides). */
@@ -386,10 +385,11 @@ function PortfolioAreaSection({ area, items, hiddenInitiatives, onToggle }: {
   }, [items]);
 
   const icon =
-    area === "Frontline Maintenance" ? "projects"
+    area === "Maintenance & Work Management"       ? "projects"
     : area === "Operations & Decision Intelligence" ? "value"
-    : area === "Frontline HSE" ? "flag"
-    : "team";
+    : area === "Workforce Safety"                   ? "flag"
+    : area === "Frontline"                          ? "home"
+    : "team"; // Performance & Experience Enablement
 
   const titleKey = areaKey(area);
   const titleLabel = getText(titleKey, area);
@@ -453,6 +453,18 @@ export function QuarterlyPage(): JSX.Element {
   const s = useStyles();
   const exportRef = useRef<HTMLDivElement>(null);
 
+  // Quarterly milestones — loaded via repository (mock: JSON seed; live: SQL via Azure Functions)
+  const [milestones, setMilestones] = useState<QuarterlyMilestone[]>([]);
+  const [milestonesError, setMilestonesError] = useState<string | null>(null);
+  useEffect(() => {
+    repository
+      .getQuarterlyMilestones()
+      .then((data) => { setMilestones(data); setMilestonesError(null); })
+      .catch((err: unknown) => {
+        setMilestonesError(err instanceof Error ? err.message : "Failed to load milestones.");
+      });
+  }, []);
+
   // Visibility state
   const [hiddenInitiatives, setHiddenInitiatives] = useState<Set<string>>(new Set());
   // Text-override state
@@ -490,7 +502,7 @@ export function QuarterlyPage(): JSX.Element {
     const keys = new Set<string>();
     for (const m of milestones) keys.add(initKey(m.portfolioArea, m.initiative));
     return keys;
-  }, []);
+  }, [milestones]);
 
   const totalCount = allInitiativeKeys.size;
   const hiddenCount = hiddenInitiatives.size;
@@ -507,7 +519,7 @@ export function QuarterlyPage(): JSX.Element {
 
   const visibleMilestones = useMemo(
     () => milestones.filter(m => !hiddenInitiatives.has(initKey(m.portfolioArea, m.initiative))),
-    [hiddenInitiatives]
+    [milestones, hiddenInitiatives]
   );
 
   const byArea = useMemo(() => {
@@ -515,7 +527,7 @@ export function QuarterlyPage(): JSX.Element {
     for (const area of QUARTERLY_PORTFOLIO_AREAS) map.set(area, []);
     for (const m of milestones) map.get(m.portfolioArea)?.push(m);
     return map;
-  }, []);
+  }, [milestones]);
 
   /** Shared canvas capture — returns a canvas from the off-screen export view. */
   const captureCanvas = useCallback(async () => {
@@ -582,6 +594,20 @@ export function QuarterlyPage(): JSX.Element {
           title={`${quarter.label} · ${quarter.monthRange}`}
           subtitle="Click rows to hide from export · click any label to rename it."
         />
+
+        {/* Milestone load error */}
+        {milestonesError && (
+          <div style={{
+            padding: "10px 16px", marginBottom: 12,
+            background: tokens.colorStatusDangerBackground1,
+            border: `1px solid ${tokens.colorStatusDangerBorder1}`,
+            borderRadius: tokens.borderRadiusMedium,
+            color: tokens.colorStatusDangerForeground1,
+            fontSize: 13,
+          }}>
+            <strong>Could not load quarterly milestones:</strong> {milestonesError}
+          </div>
+        )}
 
         {/* Quarter banner */}
         <div className={s.quarterBanner}>

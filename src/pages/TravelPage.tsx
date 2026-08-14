@@ -19,8 +19,11 @@ import { StatCard } from "../components/cards";
 import { TravelCalendar } from "../components/TravelCalendar";
 import { TravelList } from "../components/TravelList";
 import { TravelEntryForm } from "../components/TravelEntryForm";
+import { Icon } from "../components/Icon";
 import { portfolioStore } from "../store/portfolioStore";
 import type { PortfolioData, TravelEntry } from "../types/models";
+import { personName, toPersonRef } from "../types/models";
+import { downloadCsv } from "../hooks/useExportCsv";
 
 const useStyles = makeStyles({
   statGrid: {
@@ -47,8 +50,8 @@ function TravelContent({ data }: { data: PortfolioData }): JSX.Element {
   const closePanel = () => { setPanelOpen(false); setEditEntry(null); };
 
   const planned = travelEntries.filter((e) => e.status === "Planned");
-  const travelling = travelEntries.filter((e) => e.status === "Travelling");
-  const uniquePeople = [...new Set(travelEntries.map((e) => e.person))];
+  const booked  = travelEntries.filter((e) => e.status === "Booked");
+  const uniquePeople = [...new Set(travelEntries.map((e) => personName(e.person)))];
 
   const handleSave = async (input: Omit<TravelEntry, "id"> & { id?: string }) => {
     await portfolioStore.saveTravelEntry({
@@ -71,6 +74,31 @@ function TravelContent({ data }: { data: PortfolioData }): JSX.Element {
     await portfolioStore.deleteTravelEntry(id);
   };
 
+  const handleExportCsv = () => {
+    const projectMap = new Map(projects.map((p) => [p.id, p]));
+    const rows = travelEntries.map((e) => {
+      const person = toPersonRef(e.person);
+      const project = projectMap.get(e.initiativeId);
+      return {
+        id: e.id,
+        personName: person.name,
+        personEmail: person.email,
+        personCorpId: person.corpId,
+        site: e.site,
+        workArea: e.workArea,
+        team: e.team,
+        departureDate: e.departureDate,
+        returnDate: e.returnDate,
+        status: e.status,
+        flightNumber: e.flightNumber ?? "",
+        description: e.description,
+        projectTitle: project?.title ?? "",
+        projectId: e.initiativeId,
+      };
+    });
+    downloadCsv(rows, "travel-export.csv");
+  };
+
   return (
     <>
       <PageHeader
@@ -78,15 +106,24 @@ function TravelContent({ data }: { data: PortfolioData }): JSX.Element {
         title="Travel & Roster"
         subtitle="Track and plan site visits, field deployments, and team travel across all Frontline Digital initiatives"
         actions={
-          <Button appearance="primary" onClick={openAdd}>
-            Log travel
-          </Button>
+          <>
+            <Button
+              appearance="subtle"
+              icon={<Icon name="download" size={16} />}
+              onClick={handleExportCsv}
+            >
+              Export CSV
+            </Button>
+            <Button appearance="primary" onClick={openAdd}>
+              Log travel
+            </Button>
+          </>
         }
       />
 
       <div className={s.statGrid}>
         <StatCard label="Total entries" value={travelEntries.length} accentColor="#2f5e9e" />
-        <StatCard label="Currently away" value={travelling.length} accentColor="#3d8a4f" />
+        <StatCard label="Booked trips" value={booked.length} accentColor="#3d8a4f" />
         <StatCard label="Planned trips" value={planned.length} accentColor="#5f76b5" />
         <StatCard label="People travelling" value={uniquePeople.length} accentColor="#2f9e8f" />
       </div>

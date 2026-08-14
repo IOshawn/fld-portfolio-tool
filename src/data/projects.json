@@ -3,20 +3,61 @@
     "id": "trueview",
     "title": "TrueView",
     "abbrev": "TV",
-    "portfolio": "Asset Health",
+    "portfolio": "Operations & Decision Intelligence",
     "productArea": "Predictive Maintenance",
     "owner": "Phillip Rickson",
     "sponsor": "Hayley Mitchell",
-    "stage": "Scale",
-    "status": "Green",
+    "stage": "Implementation",
+    "status": "On Track",
     "startDate": "2026-01-12",
     "endDate": "2027-06-30",
     "summary": "Real-time condition monitoring for conveyors and fixed plant, streaming sensor data into a single health view for reliability crews.",
     "outcomeStatement": "Reduce unplanned fixed-plant downtime by detecting degradation before failure.",
     "businessValue": "Less unplanned downtime and longer asset life through earlier intervention.",
-    "dependencies": ["Control Room Digital"],
+    "dependencies": [
+      "control-room-digital"
+    ],
     "fundingSource": "OPEX - Asset Health",
-    "projectCode": "FD-AH-014",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-trueview-1",
+        "projectId": "trueview",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-01-12",
+        "endDate": "2026-03-05"
+      },
+      {
+        "id": "ps-trueview-2",
+        "projectId": "trueview",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-03-06",
+        "endDate": "2026-05-24"
+      },
+      {
+        "id": "ps-trueview-3",
+        "projectId": "trueview",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-05-25",
+        "endDate": "2026-10-05"
+      },
+      {
+        "id": "ps-trueview-4",
+        "projectId": "trueview",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2026-10-06",
+        "endDate": "2027-06-30"
+      }
+    ],
     "lastUpdate": "Scaled to three processing hubs; sensor coverage now at 78%.",
     "lastUpdated": "2026-06-15"
   },
@@ -24,20 +65,61 @@
     "id": "hydrohaul",
     "title": "HydroHaul",
     "abbrev": "HH",
-    "portfolio": "Water",
+    "portfolio": "Workforce Safety",
     "productArea": "Haulage & Dewatering",
     "owner": "Brett Riley",
     "sponsor": "David Nguyen",
-    "stage": "Build",
-    "status": "Amber",
+    "stage": "Implementation",
+    "status": "Off Track",
     "startDate": "2026-02-02",
     "endDate": "2027-11-30",
     "summary": "Optimises mine dewatering and water-cart haulage scheduling using live pit and weather signals.",
     "outcomeStatement": "Cut water-cart fuel burn and dust exceedances across active pits.",
     "businessValue": "Lower water-cart fuel and dust exceedances, with better water reuse.",
-    "dependencies": ["Control Room Digital"],
+    "dependencies": [
+      "control-room-digital"
+    ],
     "fundingSource": "CAPEX - Water",
-    "projectCode": "FD-WA-021",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-hydrohaul-1",
+        "projectId": "hydrohaul",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-02-02",
+        "endDate": "2026-04-09"
+      },
+      {
+        "id": "ps-hydrohaul-2",
+        "projectId": "hydrohaul",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-04-10",
+        "endDate": "2026-07-18"
+      },
+      {
+        "id": "ps-hydrohaul-3",
+        "projectId": "hydrohaul",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "Off Track",
+        "startDate": "2026-07-19",
+        "endDate": "2027-01-01"
+      },
+      {
+        "id": "ps-hydrohaul-4",
+        "projectId": "hydrohaul",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-01-02",
+        "endDate": "2027-11-30"
+      }
+    ],
     "lastUpdate": "Fleet telemetry integration behind schedule; vendor API delayed to July.",
     "lastUpdated": "2026-06-09"
   },
@@ -45,20 +127,61 @@
     "id": "cadence",
     "title": "Integrated Cadence Tool",
     "abbrev": "ICT",
-    "portfolio": "Planning & Scheduling",
+    "portfolio": "Performance & Experience Enablement",
     "productArea": "Short Interval Control",
     "owner": "Kayne Ryan",
     "sponsor": "Sarah Whitfield",
-    "stage": "Pilot",
-    "status": "Green",
+    "stage": "Implementation",
+    "status": "On Track",
     "startDate": "2026-03-01",
     "endDate": "2027-03-31",
     "summary": "Aligns short-interval-control cadence across mining and processing so crews plan to a common rhythm.",
     "outcomeStatement": "Standardise SIC cadence and lift plan adherence across operations.",
     "businessValue": "Higher plan adherence and a common operating rhythm across mining and processing.",
-    "dependencies": ["Daily Performance Insights"],
+    "dependencies": [
+      "dpi"
+    ],
     "fundingSource": "OPEX - Planning",
-    "projectCode": "FD-PL-008",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-cadence-1",
+        "projectId": "cadence",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-03-01",
+        "endDate": "2026-04-09"
+      },
+      {
+        "id": "ps-cadence-2",
+        "projectId": "cadence",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-04-10",
+        "endDate": "2026-06-07"
+      },
+      {
+        "id": "ps-cadence-3",
+        "projectId": "cadence",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-06-08",
+        "endDate": "2026-09-14"
+      },
+      {
+        "id": "ps-cadence-4",
+        "projectId": "cadence",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2026-09-15",
+        "endDate": "2027-03-31"
+      }
+    ],
     "lastUpdate": "Prototyping with OE/BI at Greater Tom Price and Hope Downs 1; engaged at West Angelas.",
     "lastUpdated": "2026-06-18"
   },
@@ -66,20 +189,62 @@
     "id": "frontline-ai",
     "title": "Frontline AI Insights",
     "abbrev": "FAI",
-    "portfolio": "Frontline Analytics",
+    "portfolio": "Performance & Experience Enablement",
     "productArea": "Generative AI",
     "owner": "Stephen Mackinlay",
     "sponsor": "Priya Iyer",
-    "stage": "Discovery",
-    "status": "Green",
+    "stage": "Pre-Feasability",
+    "status": "On Track",
     "startDate": "2026-04-15",
     "endDate": "2027-09-30",
     "summary": "Surfaces operational insights to frontline supervisors through natural-language questions over operational data.",
     "outcomeStatement": "Help supervisors make faster, better-informed shift decisions.",
     "businessValue": "Faster supervisor decisions from natural-language access to operational data.",
-    "dependencies": ["Daily Performance Insights", "Control Room Digital"],
+    "dependencies": [
+      "dpi",
+      "control-room-digital"
+    ],
     "fundingSource": "OPEX - Innovation",
-    "projectCode": "FD-FA-002",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-frontline-ai-1",
+        "projectId": "frontline-ai",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-04-15",
+        "endDate": "2026-06-06"
+      },
+      {
+        "id": "ps-frontline-ai-2",
+        "projectId": "frontline-ai",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "On Track",
+        "startDate": "2026-06-07",
+        "endDate": "2026-08-25"
+      },
+      {
+        "id": "ps-frontline-ai-3",
+        "projectId": "frontline-ai",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-08-26",
+        "endDate": "2027-01-05"
+      },
+      {
+        "id": "ps-frontline-ai-4",
+        "projectId": "frontline-ai",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-01-06",
+        "endDate": "2027-09-30"
+      }
+    ],
     "lastUpdate": "Discovery interviews complete; four candidate use cases prioritised.",
     "lastUpdated": "2026-06-20"
   },
@@ -87,20 +252,61 @@
     "id": "digby",
     "title": "DIGBY",
     "abbrev": "DGB",
-    "portfolio": "Control Room",
+    "portfolio": "Frontline",
     "productArea": "Process Automation",
     "owner": "Paulo Martins",
     "sponsor": "Marcus Tan",
-    "stage": "Design",
-    "status": "Amber",
+    "stage": "Feasability",
+    "status": "Off Track",
     "startDate": "2026-01-26",
     "endDate": "2028-02-29",
     "summary": "Digital control-room assistant for load-out and train scheduling, guiding operators through standard responses.",
     "outcomeStatement": "Reduce manual control-room interventions during load-out.",
     "businessValue": "Fewer manual control-room interventions and more consistent load-out.",
-    "dependencies": ["Control Room Digital"],
+    "dependencies": [
+      "control-room-digital"
+    ],
     "fundingSource": "CAPEX - Control Room",
-    "projectCode": "FD-CR-011",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-digby-1",
+        "projectId": "digby",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-01-26",
+        "endDate": "2026-04-11"
+      },
+      {
+        "id": "ps-digby-2",
+        "projectId": "digby",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-04-12",
+        "endDate": "2026-08-04"
+      },
+      {
+        "id": "ps-digby-3",
+        "projectId": "digby",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "Off Track",
+        "startDate": "2026-08-05",
+        "endDate": "2027-02-11"
+      },
+      {
+        "id": "ps-digby-4",
+        "projectId": "digby",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-02-12",
+        "endDate": "2028-02-29"
+      }
+    ],
     "lastUpdate": "Design review flagged scope risk on the train-ordering integration.",
     "lastUpdated": "2026-06-11"
   },
@@ -108,20 +314,61 @@
     "id": "rsm-work-mgmt",
     "title": "RSM Work Management",
     "abbrev": "RSM",
-    "portfolio": "Maintenance Excellence",
+    "portfolio": "Maintenance & Work Management",
     "productArea": "Work Management",
     "owner": "Mark Playle",
     "sponsor": "James O'Sullivan",
-    "stage": "Build",
-    "status": "Red",
+    "stage": "Implementation",
+    "status": "At Risk",
     "startDate": "2025-09-01",
     "endDate": "2027-04-30",
     "summary": "Rolls out the reliability and shutdown maintenance work-management standard with supporting tooling.",
     "outcomeStatement": "Improve maintenance schedule compliance across sites.",
     "businessValue": "Better maintenance schedule compliance and reliability outcomes.",
-    "dependencies": ["Digital Work Management"],
+    "dependencies": [
+      "dwm"
+    ],
     "fundingSource": "CAPEX - Maintenance",
-    "projectCode": "FD-MN-004",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-rsm-work-mgmt-1",
+        "projectId": "rsm-work-mgmt",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2025-09-01",
+        "endDate": "2025-10-31"
+      },
+      {
+        "id": "ps-rsm-work-mgmt-2",
+        "projectId": "rsm-work-mgmt",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2025-11-01",
+        "endDate": "2026-01-30"
+      },
+      {
+        "id": "ps-rsm-work-mgmt-3",
+        "projectId": "rsm-work-mgmt",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "Complete",
+        "startDate": "2026-01-31",
+        "endDate": "2026-07-01"
+      },
+      {
+        "id": "ps-rsm-work-mgmt-4",
+        "projectId": "rsm-work-mgmt",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "At Risk",
+        "startDate": "2026-07-02",
+        "endDate": "2027-04-30"
+      }
+    ],
     "lastUpdate": "Two key vendor resources rolled off; build milestone slipped six weeks.",
     "lastUpdated": "2026-06-05"
   },
@@ -129,20 +376,61 @@
     "id": "paperless-maintainer",
     "title": "Paperless Maintainer",
     "abbrev": "PM",
-    "portfolio": "Maintenance Excellence",
+    "portfolio": "Maintenance & Work Management",
     "productArea": "Mobility",
     "owner": "Mark Playle",
     "sponsor": "James O'Sullivan",
-    "stage": "Pilot",
-    "status": "Green",
+    "stage": "Implementation",
+    "status": "On Track",
     "startDate": "2026-02-16",
     "endDate": "2027-02-28",
     "summary": "Replaces paper maintenance checksheets with mobile forms used at the workface.",
     "outcomeStatement": "Eliminate paper checksheets and capture maintenance data at source.",
     "businessValue": "No paper at the workface and maintenance data captured at source.",
-    "dependencies": ["Digital Work Management"],
+    "dependencies": [
+      "dwm"
+    ],
     "fundingSource": "OPEX - Maintenance",
-    "projectCode": "FD-MN-009",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-paperless-maintainer-1",
+        "projectId": "paperless-maintainer",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-02-16",
+        "endDate": "2026-03-25"
+      },
+      {
+        "id": "ps-paperless-maintainer-2",
+        "projectId": "paperless-maintainer",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-03-26",
+        "endDate": "2026-05-21"
+      },
+      {
+        "id": "ps-paperless-maintainer-3",
+        "projectId": "paperless-maintainer",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-05-22",
+        "endDate": "2026-08-23"
+      },
+      {
+        "id": "ps-paperless-maintainer-4",
+        "projectId": "paperless-maintainer",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2026-08-24",
+        "endDate": "2027-02-28"
+      }
+    ],
     "lastUpdate": "Pilot running at West Angelas; 1,283 paper forms retired so far.",
     "lastUpdated": "2026-06-17"
   },
@@ -150,12 +438,12 @@
     "id": "shift-handover",
     "title": "Digital Shift Handover",
     "abbrev": "SH",
-    "portfolio": "Workforce",
+    "portfolio": "Performance & Experience Enablement",
     "productArea": "Shift Operations",
     "owner": "Kelvin Chew",
     "sponsor": "Hayley Mitchell",
-    "stage": "Scale",
-    "status": "Green",
+    "stage": "Implementation",
+    "status": "On Track",
     "startDate": "2025-11-03",
     "endDate": "2027-07-31",
     "summary": "Structured digital shift handover that carries open actions and risks across crews.",
@@ -163,7 +451,46 @@
     "businessValue": "Less information lost between shifts and safer, smoother crew transitions.",
     "dependencies": [],
     "fundingSource": "OPEX - Workforce",
-    "projectCode": "FD-WF-006",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-shift-handover-1",
+        "projectId": "shift-handover",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2025-11-03",
+        "endDate": "2026-01-05"
+      },
+      {
+        "id": "ps-shift-handover-2",
+        "projectId": "shift-handover",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-01-06",
+        "endDate": "2026-04-10"
+      },
+      {
+        "id": "ps-shift-handover-3",
+        "projectId": "shift-handover",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-04-11",
+        "endDate": "2026-09-16"
+      },
+      {
+        "id": "ps-shift-handover-4",
+        "projectId": "shift-handover",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2026-09-17",
+        "endDate": "2027-07-31"
+      }
+    ],
     "lastUpdate": "Engaged and piloting across seven sites; OE/BI, Production and Development progressing.",
     "lastUpdated": "2026-06-19"
   },
@@ -171,20 +498,61 @@
     "id": "safety-intel",
     "title": "Integrated Safety Intelligence",
     "abbrev": "ISI",
-    "portfolio": "Safety & Risk",
+    "portfolio": "Workforce Safety",
     "productArea": "Safety Analytics",
     "owner": "Ramon Cliquet de Oliveira",
     "sponsor": "Priya Iyer",
-    "stage": "Build",
-    "status": "Amber",
+    "stage": "Implementation",
+    "status": "Off Track",
     "startDate": "2026-03-09",
     "endDate": "2028-01-31",
     "summary": "Consolidates safety signals from multiple systems into a single, ranked risk view.",
     "outcomeStatement": "Detect high-potential risk earlier across the operation.",
     "businessValue": "Earlier detection of high-potential risk from consolidated safety signals.",
-    "dependencies": ["E-Permitting"],
+    "dependencies": [
+      "epermitting"
+    ],
     "fundingSource": "CAPEX - HSEC",
-    "projectCode": "FD-SR-003",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-safety-intel-1",
+        "projectId": "safety-intel",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-03-09",
+        "endDate": "2026-05-16"
+      },
+      {
+        "id": "ps-safety-intel-2",
+        "projectId": "safety-intel",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Off Track",
+        "startDate": "2026-05-17",
+        "endDate": "2026-08-28"
+      },
+      {
+        "id": "ps-safety-intel-3",
+        "projectId": "safety-intel",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-08-29",
+        "endDate": "2027-02-17"
+      },
+      {
+        "id": "ps-safety-intel-4",
+        "projectId": "safety-intel",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-02-18",
+        "endDate": "2028-01-31"
+      }
+    ],
     "lastUpdate": "Core data model built; two of five source systems integrated.",
     "lastUpdated": "2026-06-13"
   },
@@ -192,12 +560,12 @@
     "id": "control-room-digital",
     "title": "Control Room Digital",
     "abbrev": "CRD",
-    "portfolio": "Control Room",
+    "portfolio": "Operations & Decision Intelligence",
     "productArea": "Platform",
     "owner": "Paulo Martins",
     "sponsor": "Marcus Tan",
-    "stage": "Sustain",
-    "status": "Green",
+    "stage": "Implementation",
+    "status": "On Track",
     "startDate": "2025-07-01",
     "endDate": "2028-06-30",
     "summary": "Ongoing modernisation and support of the control-room digital platform underpinning other initiatives.",
@@ -205,7 +573,46 @@
     "businessValue": "A stable, supported control-room platform underpinning other initiatives.",
     "dependencies": [],
     "fundingSource": "OPEX - Control Room",
-    "projectCode": "FD-CR-001",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-control-room-digital-1",
+        "projectId": "control-room-digital",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2025-07-01",
+        "endDate": "2025-10-18"
+      },
+      {
+        "id": "ps-control-room-digital-2",
+        "projectId": "control-room-digital",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2025-10-19",
+        "endDate": "2026-03-31"
+      },
+      {
+        "id": "ps-control-room-digital-3",
+        "projectId": "control-room-digital",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-04-01",
+        "endDate": "2026-12-30"
+      },
+      {
+        "id": "ps-control-room-digital-4",
+        "projectId": "control-room-digital",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2026-12-31",
+        "endDate": "2028-06-30"
+      }
+    ],
     "lastUpdate": "Quarterly platform patching complete; platform uptime 99.4%.",
     "lastUpdated": "2026-06-16"
   },
@@ -213,20 +620,62 @@
     "id": "dpi",
     "title": "Daily Performance Insights",
     "abbrev": "DPI",
-    "portfolio": "Frontline Analytics",
+    "portfolio": "Performance & Experience Enablement",
     "productArea": "Performance Analytics",
     "owner": "Stephen Mackinlay",
     "sponsor": "Priya Iyer",
-    "stage": "Pilot",
-    "status": "Green",
+    "stage": "Implementation",
+    "status": "On Track",
     "startDate": "2026-01-19",
     "endDate": "2027-12-31",
     "summary": "Surfaces daily production and performance insights to frontline crews and supervisors across mining work areas.",
     "outcomeStatement": "Lift daily performance conversations with shared, trusted numbers.",
     "businessValue": "Faster, data-led shift reviews and earlier correction of performance gaps across multiple sites.",
-    "dependencies": ["Control Room Digital", "Integrated Cadence Tool"],
+    "dependencies": [
+      "control-room-digital",
+      "cadence"
+    ],
     "fundingSource": "OPEX - Innovation",
-    "projectCode": "FD-FA-005",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-dpi-1",
+        "projectId": "dpi",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-01-19",
+        "endDate": "2026-03-30"
+      },
+      {
+        "id": "ps-dpi-2",
+        "projectId": "dpi",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Complete",
+        "startDate": "2026-03-31",
+        "endDate": "2026-07-15"
+      },
+      {
+        "id": "ps-dpi-3",
+        "projectId": "dpi",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-07-16",
+        "endDate": "2027-01-09"
+      },
+      {
+        "id": "ps-dpi-4",
+        "projectId": "dpi",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-01-10",
+        "endDate": "2027-12-31"
+      }
+    ],
     "lastUpdate": "Piloting across Production, Drill & Blast and Development at five sites; engaged at Gudai-Darri.",
     "lastUpdated": "2026-06-21"
   },
@@ -234,20 +683,62 @@
     "id": "dwm",
     "title": "Digital Work Management",
     "abbrev": "DWM",
-    "portfolio": "Maintenance Excellence",
+    "portfolio": "Maintenance & Work Management",
     "productArea": "Work Management",
     "owner": "Mark Playle",
     "sponsor": "James O'Sullivan",
-    "stage": "Design",
-    "status": "Amber",
+    "stage": "Feasability",
+    "status": "Off Track",
     "startDate": "2026-04-06",
     "endDate": "2028-03-31",
     "summary": "Digitises maintenance and operational work management, replacing spreadsheets and paper routines.",
     "outcomeStatement": "A single digital flow for planning, scheduling and closing out work.",
     "businessValue": "Improved schedule compliance and visibility of work status across sites.",
-    "dependencies": ["RSM Work Management", "Paperless Maintainer"],
+    "dependencies": [
+      "rsm-work-mgmt",
+      "paperless-maintainer"
+    ],
     "fundingSource": "CAPEX - Maintenance",
-    "projectCode": "FD-MN-012",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-dwm-1",
+        "projectId": "dwm",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-04-06",
+        "endDate": "2026-06-17"
+      },
+      {
+        "id": "ps-dwm-2",
+        "projectId": "dwm",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "Off Track",
+        "startDate": "2026-06-18",
+        "endDate": "2026-10-04"
+      },
+      {
+        "id": "ps-dwm-3",
+        "projectId": "dwm",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-10-05",
+        "endDate": "2027-04-03"
+      },
+      {
+        "id": "ps-dwm-4",
+        "projectId": "dwm",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-04-04",
+        "endDate": "2028-03-31"
+      }
+    ],
     "lastUpdate": "Design under way with OE/BI and Production at Hope Downs 1.",
     "lastUpdated": "2026-06-10"
   },
@@ -255,20 +746,61 @@
     "id": "epermitting",
     "title": "E-Permitting",
     "abbrev": "EPER",
-    "portfolio": "Safety & Risk",
+    "portfolio": "Maintenance & Work Management",
     "productArea": "Permit to Work",
     "owner": "Ramon Cliquet de Oliveira",
     "sponsor": "Priya Iyer",
-    "stage": "Discovery",
-    "status": "Green",
+    "stage": "Pre-Feasability",
+    "status": "On Track",
     "startDate": "2026-05-25",
     "endDate": "2028-06-30",
     "summary": "Replaces paper permits to work with a digital permitting workflow for high-risk work.",
     "outcomeStatement": "Safer, faster, auditable permit-to-work across the operation.",
     "businessValue": "Reduced permit errors and a clear audit trail for high-risk work.",
-    "dependencies": ["Integrated Safety Intelligence"],
+    "dependencies": [
+      "safety-intel"
+    ],
     "fundingSource": "CAPEX - HSEC",
-    "projectCode": "FD-SR-007",
+    "nOrPCode": "",
+    "sites": [],
+    "projectStages": [
+      {
+        "id": "ps-epermitting-1",
+        "projectId": "epermitting",
+        "label": "Define",
+        "stage": "Define",
+        "status": "Complete",
+        "startDate": "2026-05-25",
+        "endDate": "2026-08-09"
+      },
+      {
+        "id": "ps-epermitting-2",
+        "projectId": "epermitting",
+        "label": "Pre-Feasability",
+        "stage": "Pre-Feasability",
+        "status": "On Track",
+        "startDate": "2026-08-10",
+        "endDate": "2026-12-02"
+      },
+      {
+        "id": "ps-epermitting-3",
+        "projectId": "epermitting",
+        "label": "Feasability",
+        "stage": "Feasability",
+        "status": "On Track",
+        "startDate": "2026-12-03",
+        "endDate": "2027-06-12"
+      },
+      {
+        "id": "ps-epermitting-4",
+        "projectId": "epermitting",
+        "label": "Implementation",
+        "stage": "Implementation",
+        "status": "On Track",
+        "startDate": "2027-06-13",
+        "endDate": "2028-06-30"
+      }
+    ],
     "lastUpdate": "Discovery started with HSEC and OE/BI; scoping first sites.",
     "lastUpdated": "2026-06-23"
   }

@@ -41,9 +41,9 @@ export function projectsByStatus(projects: Project[]): { status: Status; count: 
 }
 
 export function atRiskProjects(projects: Project[]): Project[] {
-  const severity: Partial<Record<Status, number>> = { Red: 0, Amber: 1, "On Hold": 2 };
+  const severity: Partial<Record<Status, number>> = { "At Risk": 0, "Off Track": 1, "On Hold": 2 };
   return projects
-    .filter((p) => p.status === "Red" || p.status === "Amber" || p.status === "On Hold")
+    .filter((p) => p.status === "At Risk" || p.status === "Off Track" || p.status === "On Hold")
     .sort((a, b) => (severity[a.status] ?? 9) - (severity[b.status] ?? 9));
 }
 
@@ -60,9 +60,9 @@ export function initiativesRequiringAttention(
 ): Project[] {
   const onHold = new Set(engagements.filter((e) => e.status === "On Hold").map((e) => e.initiativeId));
   const flagged = projects.filter(
-    (p) => p.status === "Red" || p.status === "Amber" || onHold.has(p.id)
+    (p) => p.status === "At Risk" || p.status === "Off Track" || onHold.has(p.id)
   );
-  const severity: Partial<Record<Status, number>> = { Red: 0, Amber: 1, "On Hold": 2, Green: 3, Complete: 4 };
+  const severity: Partial<Record<Status, number>> = { "At Risk": 0, "Off Track": 1, "On Hold": 2, "On Track": 3, Complete: 4 };
   return flagged.sort((a, b) => (severity[a.status] ?? 9) - (severity[b.status] ?? 9));
 }
 

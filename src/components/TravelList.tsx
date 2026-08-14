@@ -1,6 +1,7 @@
 /**
  * TravelList — sortable, filterable list of travel entries.
  * Shows associated travel as small badges. Includes an "Add entry" button.
+ * Shows a project-impact indicator for people who are owner/sponsor on active projects.
  */
 import { useState, useMemo } from "react";
 import {
@@ -10,18 +11,19 @@ import {
   Text,
   Button,
   Badge,
+  Tooltip,
 } from "@fluentui/react-components";
 import { FilterBar, SelectFilter, SelectFilterKV, ResultCount } from "./FilterBar";
 import type { TravelEntry, Project } from "../types/models";
-import { SITES, TRAVEL_STATUSES } from "../types/models";
+import { SITES, TRAVEL_STATUSES, personName, toPersonRef } from "../types/models";
+import { projectsForPerson } from "../hooks/usePersonTravelAlerts";
+import { NotifyDialog } from "./NotifyDialog";
 import { formatDate } from "../lib/format";
 import { Icon } from "./Icon";
 
 const STATUS_COLORS: Record<TravelEntry["status"], string> = {
   Planned: tokens.colorBrandBackground,
-  Travelling: "#3d8a4f",
-  Returned: tokens.colorNeutralStroke1,
-  Cancelled: tokens.colorStatusDangerBackground3,
+  Booked:  "#3d8a4f",
 };
 
 const useStyles = makeStyles({
@@ -145,15 +147,22 @@ export function TravelList({ entries, projects, onAdd, onEdit }: Props): JSX.Ele
     key: "departureDate",
     dir: 1,
   });
+  const [notifyEntry, setNotifyEntry] = useState<TravelEntry | null>(null);
 
   const projectMap = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
   const entryMap = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
+
+  // Active projects for cross-reference
+  const activeProjects = useMemo(
+    () => projects.filter((p) => p.status !== "Complete"),
+    [projects]
+  );
 
   const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
   const clear = () => setFilters(EMPTY);
 
   const personOptions = useMemo(
-    () => [...new Set(entries.map((e) => e.person))].sort(),
+    () => [...new Set(entries.map((e) => personName(e.person)))].sort(),
     [entries]
   );
   const projectOptions = useMemo(
@@ -166,7 +175,7 @@ export function TravelList({ entries, projects, onAdd, onEdit }: Props): JSX.Ele
 
   const filtered = useMemo(() => {
     let result = entries;
-    if (filters.person) result = result.filter((e) => e.person === filters.person);
+    if (filters.person) result = result.filter((e) => personName(e.person) === filters.person);
     if (filters.site) result = result.filter((e) => e.site === filters.site);
     if (filters.status) result = result.filter((e) => e.status === filters.status);
     if (filters.initiativeId) result = result.filter((e) => e.initiativeId === filters.initiativeId);
@@ -176,8 +185,8 @@ export function TravelList({ entries, projects, onAdd, onEdit }: Props): JSX.Ele
   const sorted = useMemo(() => {
     const { key, dir } = sort;
     return [...filtered].sort((a, b) => {
-      const av = a[key] ?? "";
-      const bv = b[key] ?? "";
+      const av = key === "person" ? personName(a.person) : (a[key as Exclude<SortKey, "person">] ?? "");
+      const bv = key === "person" ? personName(b.person) : (b[key as Exclude<SortKey, "person">] ?? "");
       return av < bv ? -dir : av > bv ? dir : 0;
     });
   }, [filtered, sort]);
@@ -267,10 +276,70 @@ export function TravelList({ entries, projects, onAdd, onEdit }: Props): JSX.Ele
               const associated = entry.associatedWith
                 .map((id) => entryMap.get(id))
                 .filter(Boolean) as TravelEntry[];
+              const entryPersonRef = toPersonRef(entry.person);
+              const impactedProjects = projectsForPerson(entryPersonRef, activeProjects);
               return (
                 <tr key={entry.id} className={s.tr} onClick={() => onEdit(entry)}>
                   <td className={s.td}>
-                    <Text size={300} weight="semibold">{entry.person}</Text>
+                    <div style={{ display: "flex", alignItems: "center", columnGap: "6px", flexWrap: "wrap" }}>
+                      <Text size={300} weight="semibold">{personName(entry.person)}</Text>
+                      {entryPersonRef.email && (
+                        <a
+                          href={`mailto:${entryPersonRef.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ color: tokens.colorBrandForeground2, lineHeight: 1 }}
+                          title={`Email ${entryPersonRef.name}`}
+                        >
+                          <Icon name="mail" size={13} />
+                        </a>
+                      )}
+                      {impactedProjects.length > 0 && (
+                        <Tooltip
+                          content={
+                            <div>
+                              <strong>Project impact:</strong>
+                              <ul style={{ margin: "4px 0 0 0", paddingLeft: "16px" }}>
+                                {impactedProjects.map((p) => (
+                                  <li key={p.id}>{p.title} ({p.role})</li>
+                                ))}
+                              </ul>
+                            </div>
+                          }
+                          relationship="label"
+                        >
+                          <Badge
+                            appearance="tint"
+                            color="warning"
+                            size="small"
+                            shape="rounded"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {impactedProjects.length} project{impactedProjects.length > 1 ? "s" : ""}
+                          </Badge>
+                        </Tooltip>
+                      )}
+                    </div>
+                    {entryPersonRef.email && (
+                      <div style={{ marginTop: "4px" }}>
+                        <button
+                          style={{
+                            background: "none",
+                            border: "none",
+                            padding: "2px 0",
+                            cursor: "pointer",
+                            color: tokens.colorBrandForeground2,
+                            fontSize: "11px",
+                            display: "flex",
+                            alignItems: "center",
+                            columnGap: "3px",
+                          }}
+                          onClick={(e) => { e.stopPropagation(); setNotifyEntry(entry); }}
+                        >
+                          <Icon name="send" size={11} />
+                          Notify
+                        </button>
+                      </div>
+                    )}
                     {associated.length > 0 ? (
                       <div className={s.assocList}>
                         {associated.map((a) => (
@@ -280,7 +349,7 @@ export function TravelList({ entries, projects, onAdd, onEdit }: Props): JSX.Ele
                             size="small"
                             shape="rounded"
                           >
-                            {a.person}
+                            {personName(a.person)}
                           </Badge>
                         ))}
                       </div>
@@ -331,6 +400,17 @@ export function TravelList({ entries, projects, onAdd, onEdit }: Props): JSX.Ele
             })}
           </tbody>
         </table>
+      )}
+
+      {notifyEntry && (
+        <NotifyDialog
+          open={!!notifyEntry}
+          onClose={() => setNotifyEntry(null)}
+          recipientName={personName(notifyEntry.person)}
+          recipientEmail={toPersonRef(notifyEntry.person).email}
+          defaultSubject={`Travel notification: ${notifyEntry.site} (${formatDate(notifyEntry.departureDate)})`}
+          defaultBody={`Hi ${personName(notifyEntry.person)},\n\nI wanted to reach out regarding your upcoming travel to ${notifyEntry.site} from ${formatDate(notifyEntry.departureDate)} to ${formatDate(notifyEntry.returnDate)}.\n\nThanks`}
+        />
       )}
     </div>
   );

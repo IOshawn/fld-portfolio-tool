@@ -5,8 +5,11 @@
  * Each tab shows a full-width spreadsheet-style table where clicking any
  * editable cell activates an inline editor. Multiple rows can be selected
  * for bulk status/stage changes or deletion.
+ *
+ * Column headers are sortable (click to toggle asc/desc).
+ * A filter bar above each table narrows rows by any text field.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   makeStyles,
   shorthands,
@@ -29,17 +32,25 @@ import type {
   WorkArea,
   EngagementStage,
   EngagementStatus,
+  PersonRef,
 } from "../types/models";
 import {
   STAGES,
   STATUSES,
   MILESTONE_STATUSES,
+  PORTFOLIOS,
   SITES,
   WORK_AREAS,
   ENGAGEMENT_STAGES,
   ENGAGEMENT_STATUSES,
+  personName,
 } from "../types/models";
+import { PeoplePicker } from "../components/PeoplePicker";
 import { Icon } from "../components/Icon";
+import { repository } from "../services";
+import type { QuarterlyMilestoneInput } from "../services";
+import type { QuarterlyMilestone, PortfolioArea } from "../types/quarterly";
+import { QUARTERLY_PORTFOLIO_AREAS } from "../types/quarterly";
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +97,31 @@ const useStyles = makeStyles({
     marginRight: "4px",
     whiteSpace: "nowrap",
   },
+  filterBar: {
+    display: "flex",
+    alignItems: "center",
+    columnGap: "8px",
+    marginBottom: "10px",
+  },
+  filterInput: {
+    flex: "1 1 240px",
+    maxWidth: "360px",
+    fontSize: "13px",
+    ...shorthands.padding("5px", "10px"),
+    ...shorthands.borderRadius("6px"),
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    outline: "none",
+    background: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    ":focus": {
+      border: `1px solid ${tokens.colorBrandStroke1}`,
+    },
+  },
+  filterCount: {
+    fontSize: "12px",
+    color: tokens.colorNeutralForeground3,
+    whiteSpace: "nowrap",
+  },
   tableWrap: {
     overflowX: "auto",
     ...shorthands.borderRadius("8px"),
@@ -111,6 +147,17 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground3,
     whiteSpace: "nowrap",
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  thSortable: {
+    cursor: "pointer",
+    userSelect: "none",
+    ":hover": {
+      color: tokens.colorNeutralForeground1,
+      backgroundColor: tokens.colorNeutralBackground3,
+    },
+  },
+  thActive: {
+    color: tokens.colorBrandForeground1,
   },
   thCheck: {
     width: "36px",
@@ -158,6 +205,74 @@ const useStyles = makeStyles({
     fontSize: "11px",
   },
 });
+
+// ─── Sort helpers ─────────────────────────────────────────────────────────────
+
+type SortDir = "asc" | "desc";
+
+interface SortConfig {
+  key: string;
+  dir: SortDir;
+}
+
+function useSortFilter() {
+  const [filterText, setFilterText] = useState("");
+  const [sort, setSort] = useState<SortConfig | null>(null);
+
+  const toggleSort = (key: string) => {
+    setSort((prev) =>
+      prev?.key === key
+        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: "asc" }
+    );
+  };
+
+  return { filterText, setFilterText, sort, toggleSort };
+}
+
+function sortRows<T extends Record<string, unknown>>(rows: T[], sort: SortConfig | null): T[] {
+  if (!sort) return rows;
+  return [...rows].sort((a, b) => {
+    const av = String(a[sort.key] ?? "").toLowerCase();
+    const bv = String(b[sort.key] ?? "").toLowerCase();
+    const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+    return sort.dir === "asc" ? cmp : -cmp;
+  });
+}
+
+function filterRows<T extends Record<string, unknown>>(rows: T[], text: string, getSearchStr: (row: T) => string): T[] {
+  if (!text.trim()) return rows;
+  const q = text.trim().toLowerCase();
+  return rows.filter((r) => getSearchStr(r).toLowerCase().includes(q));
+}
+
+// ─── SortableHeader ───────────────────────────────────────────────────────────
+
+interface SortableHeaderProps {
+  label: string;
+  sortKey: string;
+  sort: SortConfig | null;
+  onSort: (key: string) => void;
+  className?: string;
+}
+
+function SortableHeader({ label, sortKey, sort, onSort, className }: SortableHeaderProps) {
+  const s = useStyles();
+  const isActive = sort?.key === sortKey;
+  const arrow = isActive ? (sort!.dir === "asc" ? " ↑" : " ↓") : " ↕";
+
+  return (
+    <th
+      className={mergeClasses(s.th, s.thSortable, isActive ? s.thActive : undefined, className)}
+      onClick={() => onSort(sortKey)}
+      aria-sort={isActive ? (sort!.dir === "asc" ? "ascending" : "descending") : "none"}
+      title={`Sort by ${label}`}
+    >
+      {label}
+      <span style={{ opacity: isActive ? 1 : 0.35, fontSize: "10px", marginLeft: "2px" }}>{arrow}</span>
+    </th>
+  );
+}
 
 // ─── EditableCell ─────────────────────────────────────────────────────────────
 
@@ -276,6 +391,109 @@ function EditableCell({ value, type = "text", options, readonly, onSave }: Edita
   );
 }
 
+// ─── PersonPickerCell ─────────────────────────────────────────────────────────
+
+interface PersonPickerCellProps {
+  value: PersonRef;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSave?: (person: PersonRef) => Promise<any>;
+}
+
+function PersonPickerCell({ value, onSave }: PersonPickerCellProps) {
+  const s = useStyles();
+  const [editing, setEditing] = useState(false);
+  const [saveState, setSaveState] = useState<CellSaveState>("idle");
+
+  /**
+   * Ref always holds the latest PersonRef emitted by PeoplePicker's onChange.
+   * Using a ref (not state) avoids stale-closure problems inside setTimeout
+   * callbacks — a ref read at execution time always sees the latest value,
+   * regardless of when the closure was created.
+   */
+  const latestRef = useRef<PersonRef>(value);
+
+  // Keep the ref in sync with the parent value whenever we're not editing
+  useEffect(() => {
+    if (!editing) latestRef.current = value;
+  }, [value, editing]);
+
+  const displayValue = personName(value);
+
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
+  const onSaveRef = useRef(onSave);
+  onSaveRef.current = onSave;
+
+  const commit = useCallback(async (person: PersonRef) => {
+    setEditing(false);
+    const current = valueRef.current;
+    const unchanged =
+      person.name === current.name &&
+      person.email === current.email &&
+      person.corpId === current.corpId;
+    if (unchanged || !onSaveRef.current) return;
+    setSaveState("saving");
+    try {
+      await onSaveRef.current(person);
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 1500);
+    } catch {
+      setSaveState("idle");
+    }
+  }, []); // stable — reads values via refs, no closure over props
+
+  /**
+   * Wrapper div's onBlur fires when focus leaves the entire picker area.
+   * We wait 250 ms so PeoplePicker's own free-text onChange (delayed 150 ms
+   * by its internal setTimeout) has already updated latestRef.current before
+   * we read it and commit.
+   */
+  const handleWrapperBlur = useCallback(() => {
+    setTimeout(() => void commit(latestRef.current), 250);
+  }, [commit]);
+
+  const cellStyle: React.CSSProperties = {
+    cursor: "text",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    display: "block",
+  };
+
+  return (
+    <td className={s.td} onClick={(e) => e.stopPropagation()}>
+      <div style={{ display: "flex", alignItems: "center", minWidth: 0, position: "relative" }}>
+        {editing ? (
+          <div style={{ width: "100%", minWidth: 160 }} onBlur={handleWrapperBlur}>
+            <PeoplePicker
+              value={latestRef.current}
+              onChange={(person) => {
+                // Always update the ref synchronously — no stale closure risk
+                latestRef.current = person;
+              }}
+              placeholder="Search people…"
+            />
+          </div>
+        ) : (
+          <span
+            title={displayValue || "Click to edit"}
+            style={cellStyle}
+            onClick={() => {
+              latestRef.current = value;
+              setEditing(true);
+            }}
+          >
+            {displayValue || <span style={{ color: tokens.colorNeutralForeground4 }}>—</span>}
+          </span>
+        )}
+        {saveState === "saving" && <span className={s.savingIndicator} title="Saving…" />}
+        {saveState === "saved" && <span className={s.successTick}>✓</span>}
+      </div>
+    </td>
+  );
+}
+
 // ─── Bulk action toolbar ──────────────────────────────────────────────────────
 
 interface BulkToolbarProps {
@@ -321,12 +539,37 @@ function ProjectsTable({ data }: { data: PortfolioData }) {
   const [bulkStatus, setBulkStatus] = useState<Status | "">("");
   const [bulkStage, setBulkStage] = useState<Stage | "">("");
   const [deleting, setDeleting] = useState(false);
+  const { filterText, setFilterText, sort, toggleSort } = useSortFilter();
 
   const projects = data.projects;
-  const allChecked = projects.length > 0 && selected.size === projects.length;
+
+  // Build sortable record shape (flatten owner/sponsor names)
+  const rows = useMemo(
+    () =>
+      projects.map((p) => ({
+        ...p,
+        _ownerName: typeof p.owner === "object" ? p.owner.name : String(p.owner ?? ""),
+        _sponsorName: typeof p.sponsor === "object" ? p.sponsor.name : String(p.sponsor ?? ""),
+      })),
+    [projects]
+  );
+
+  const visibleRows = useMemo(() => {
+    const filtered = filterRows(rows, filterText, (r) =>
+      [r.title, r.abbrev, r.portfolio, r.productArea, r._ownerName, r._sponsorName,
+       r.stage, r.status, r.startDate, r.endDate, r.fundingSource, r.nOrPCode].join(" ")
+    );
+    return sortRows(filtered, sort);
+  }, [rows, filterText, sort]);
+
+  const allChecked = visibleRows.length > 0 && visibleRows.every((r) => selected.has(r.id));
 
   const toggleAll = () =>
-    setSelected(allChecked ? new Set() : new Set(projects.map((p) => p.id)));
+    setSelected(
+      allChecked
+        ? new Set([...selected].filter((id) => !visibleRows.find((r) => r.id === id)))
+        : new Set([...selected, ...visibleRows.map((r) => r.id)])
+    );
   const toggle = (id: string) => {
     const next = new Set(selected);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -398,6 +641,27 @@ function ProjectsTable({ data }: { data: PortfolioData }) {
           </select>
         </div>
       )}
+
+      {/* Filter bar */}
+      <div className={s.filterBar}>
+        <input
+          className={s.filterInput}
+          type="search"
+          placeholder="Filter projects…"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          aria-label="Filter projects"
+        />
+        <span className={s.filterCount}>
+          {visibleRows.length} / {projects.length}
+        </span>
+        {filterText && (
+          <Button size="small" appearance="subtle" onClick={() => setFilterText("")}>
+            Clear
+          </Button>
+        )}
+      </div>
+
       <div className={s.tableWrap}>
         <table className={s.table}>
           <thead className={s.thead}>
@@ -405,22 +669,22 @@ function ProjectsTable({ data }: { data: PortfolioData }) {
               <th className={s.thCheck}>
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Select all" />
               </th>
-              <th className={s.th}>Title</th>
-              <th className={s.th}>Abbrev</th>
-              <th className={s.th}>Portfolio</th>
-              <th className={s.th}>Product Area</th>
-              <th className={s.th}>Owner</th>
-              <th className={s.th}>Sponsor</th>
-              <th className={s.th}>Stage</th>
-              <th className={s.th}>Status</th>
-              <th className={s.th}>Start</th>
-              <th className={s.th}>End</th>
-              <th className={s.th}>Funding Source</th>
-              <th className={s.th}>Code</th>
+              <SortableHeader label="Title" sortKey="title" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Abbrev" sortKey="abbrev" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Portfolio" sortKey="portfolio" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Product Area" sortKey="productArea" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Owner" sortKey="_ownerName" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Sponsor" sortKey="_sponsorName" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Stage" sortKey="stage" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Status" sortKey="status" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Start" sortKey="startDate" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="End" sortKey="endDate" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Funding Source" sortKey="fundingSource" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Code" sortKey="nOrPCode" sort={sort} onSort={toggleSort} />
             </tr>
           </thead>
           <tbody>
-            {projects.map((p) => (
+            {visibleRows.map((p) => (
               <tr
                 key={p.id}
                 className={mergeClasses(s.tr, selected.has(p.id) && s.trSelected)}
@@ -444,19 +708,21 @@ function ProjectsTable({ data }: { data: PortfolioData }) {
                 />
                 <EditableCell
                   value={p.portfolio}
+                  type="select"
+                  options={PORTFOLIOS}
                   onSave={(v) => actions.updateProject({ id: p.id, portfolio: v })}
                 />
                 <EditableCell
                   value={p.productArea}
                   onSave={(v) => actions.updateProject({ id: p.id, productArea: v })}
                 />
-                <EditableCell
-                  value={p.owner}
-                  onSave={(v) => actions.updateProject({ id: p.id, owner: v })}
+                <PersonPickerCell
+                  value={typeof p.owner === "object" ? p.owner : { name: String(p.owner ?? ""), email: "", corpId: "" }}
+                  onSave={(person) => actions.updateProject({ id: p.id, owner: person })}
                 />
-                <EditableCell
-                  value={p.sponsor}
-                  onSave={(v) => actions.updateProject({ id: p.id, sponsor: v })}
+                <PersonPickerCell
+                  value={typeof p.sponsor === "object" ? p.sponsor : { name: String(p.sponsor ?? ""), email: "", corpId: "" }}
+                  onSave={(person) => actions.updateProject({ id: p.id, sponsor: person })}
                 />
                 <EditableCell
                   value={p.stage}
@@ -485,11 +751,18 @@ function ProjectsTable({ data }: { data: PortfolioData }) {
                   onSave={(v) => actions.updateProject({ id: p.id, fundingSource: v })}
                 />
                 <EditableCell
-                  value={p.projectCode}
-                  onSave={(v) => actions.updateProject({ id: p.id, projectCode: v })}
+                  value={p.nOrPCode}
+                  onSave={(v) => actions.updateProject({ id: p.id, nOrPCode: v })}
                 />
               </tr>
             ))}
+            {visibleRows.length === 0 && (
+              <tr>
+                <td colSpan={13} style={{ textAlign: "center", padding: "24px", color: tokens.colorNeutralForeground3 }}>
+                  No projects match "{filterText}"
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -506,13 +779,37 @@ function EngagementsTable({ data }: { data: PortfolioData }) {
   const [bulkStatus, setBulkStatus] = useState<EngagementStatus | "">("");
   const [bulkStage, setBulkStage] = useState<EngagementStage | "">("");
   const [deleting, setDeleting] = useState(false);
+  const { filterText, setFilterText, sort, toggleSort } = useSortFilter();
 
   const engagements = data.engagements;
   const projectMap = new Map(data.projects.map((p) => [p.id, p.title]));
-  const allChecked = engagements.length > 0 && selected.size === engagements.length;
+
+  const rows = useMemo(
+    () =>
+      engagements.map((e) => ({
+        ...e,
+        _projectTitle: projectMap.get(e.initiativeId) ?? e.initiativeId,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [engagements, data.projects]
+  );
+
+  const visibleRows = useMemo(() => {
+    const filtered = filterRows(rows, filterText, (r) =>
+      [r._projectTitle, r.site, r.workArea, r.team, r.stage, r.status,
+       r.startDate, r.endDate, r.purpose, r.notes ?? ""].join(" ")
+    );
+    return sortRows(filtered, sort);
+  }, [rows, filterText, sort]);
+
+  const allChecked = visibleRows.length > 0 && visibleRows.every((r) => selected.has(r.id));
 
   const toggleAll = () =>
-    setSelected(allChecked ? new Set() : new Set(engagements.map((e) => e.id)));
+    setSelected(
+      allChecked
+        ? new Set([...selected].filter((id) => !visibleRows.find((r) => r.id === id)))
+        : new Set([...selected, ...visibleRows.map((r) => r.id)])
+    );
   const toggle = (id: string) => {
     const next = new Set(selected);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -625,6 +922,27 @@ function EngagementsTable({ data }: { data: PortfolioData }) {
           </select>
         </div>
       )}
+
+      {/* Filter bar */}
+      <div className={s.filterBar}>
+        <input
+          className={s.filterInput}
+          type="search"
+          placeholder="Filter engagements…"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          aria-label="Filter engagements"
+        />
+        <span className={s.filterCount}>
+          {visibleRows.length} / {engagements.length}
+        </span>
+        {filterText && (
+          <Button size="small" appearance="subtle" onClick={() => setFilterText("")}>
+            Clear
+          </Button>
+        )}
+      </div>
+
       <div className={s.tableWrap}>
         <table className={s.table}>
           <thead className={s.thead}>
@@ -632,19 +950,19 @@ function EngagementsTable({ data }: { data: PortfolioData }) {
               <th className={s.thCheck}>
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Select all" />
               </th>
-              <th className={s.th}>Project</th>
-              <th className={s.th}>Site</th>
-              <th className={s.th}>Work Area</th>
-              <th className={s.th}>Team</th>
-              <th className={s.th}>Stage</th>
-              <th className={s.th}>Status</th>
-              <th className={s.th}>Start</th>
-              <th className={s.th}>End</th>
-              <th className={s.th}>Purpose</th>
+              <SortableHeader label="Project" sortKey="_projectTitle" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Site" sortKey="site" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Work Area" sortKey="workArea" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Team" sortKey="team" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Stage" sortKey="stage" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Status" sortKey="status" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Start" sortKey="startDate" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="End" sortKey="endDate" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Purpose" sortKey="purpose" sort={sort} onSort={toggleSort} />
             </tr>
           </thead>
           <tbody>
-            {engagements.map((e) => (
+            {visibleRows.map((e) => (
               <tr
                 key={e.id}
                 className={mergeClasses(s.tr, selected.has(e.id) && s.trSelected)}
@@ -660,7 +978,7 @@ function EngagementsTable({ data }: { data: PortfolioData }) {
                 </td>
                 {/* Project — read-only FK display */}
                 <td className={mergeClasses(s.td, s.tdReadonly)}>
-                  <span title={e.initiativeId}>{projectMap.get(e.initiativeId) ?? e.initiativeId}</span>
+                  <span title={e.initiativeId}>{e._projectTitle}</span>
                 </td>
                 <EditableCell
                   value={e.site}
@@ -706,6 +1024,13 @@ function EngagementsTable({ data }: { data: PortfolioData }) {
                 />
               </tr>
             ))}
+            {visibleRows.length === 0 && (
+              <tr>
+                <td colSpan={10} style={{ textAlign: "center", padding: "24px", color: tokens.colorNeutralForeground3 }}>
+                  No engagements match "{filterText}"
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -721,13 +1046,36 @@ function MilestonesTable({ data }: { data: PortfolioData }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<MilestoneStatus | "">("");
   const [deleting, setDeleting] = useState(false);
+  const { filterText, setFilterText, sort, toggleSort } = useSortFilter();
 
   const milestones = data.milestones;
   const projectMap = new Map(data.projects.map((p) => [p.id, p.title]));
-  const allChecked = milestones.length > 0 && selected.size === milestones.length;
+
+  const rows = useMemo(
+    () =>
+      milestones.map((m) => ({
+        ...m,
+        _projectTitle: projectMap.get(m.projectId) ?? m.projectId,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [milestones, data.projects]
+  );
+
+  const visibleRows = useMemo(() => {
+    const filtered = filterRows(rows, filterText, (r) =>
+      [r._projectTitle, r.name, r.date, r.status, r.notes ?? ""].join(" ")
+    );
+    return sortRows(filtered, sort);
+  }, [rows, filterText, sort]);
+
+  const allChecked = visibleRows.length > 0 && visibleRows.every((r) => selected.has(r.id));
 
   const toggleAll = () =>
-    setSelected(allChecked ? new Set() : new Set(milestones.map((m) => m.id)));
+    setSelected(
+      allChecked
+        ? new Set([...selected].filter((id) => !visibleRows.find((r) => r.id === id)))
+        : new Set([...selected, ...visibleRows.map((r) => r.id)])
+    );
   const toggle = (id: string) => {
     const next = new Set(selected);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -797,6 +1145,27 @@ function MilestonesTable({ data }: { data: PortfolioData }) {
           </select>
         </div>
       )}
+
+      {/* Filter bar */}
+      <div className={s.filterBar}>
+        <input
+          className={s.filterInput}
+          type="search"
+          placeholder="Filter milestones…"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          aria-label="Filter milestones"
+        />
+        <span className={s.filterCount}>
+          {visibleRows.length} / {milestones.length}
+        </span>
+        {filterText && (
+          <Button size="small" appearance="subtle" onClick={() => setFilterText("")}>
+            Clear
+          </Button>
+        )}
+      </div>
+
       <div className={s.tableWrap}>
         <table className={s.table}>
           <thead className={s.thead}>
@@ -804,15 +1173,15 @@ function MilestonesTable({ data }: { data: PortfolioData }) {
               <th className={s.thCheck}>
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Select all" />
               </th>
-              <th className={s.th}>Project</th>
-              <th className={s.th}>Milestone Name</th>
-              <th className={s.th}>Date</th>
-              <th className={s.th}>Status</th>
-              <th className={s.th}>Notes</th>
+              <SortableHeader label="Project" sortKey="_projectTitle" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Milestone Name" sortKey="name" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Date" sortKey="date" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Status" sortKey="status" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Notes" sortKey="notes" sort={sort} onSort={toggleSort} />
             </tr>
           </thead>
           <tbody>
-            {milestones.map((m) => (
+            {visibleRows.map((m) => (
               <tr
                 key={m.id}
                 className={mergeClasses(s.tr, selected.has(m.id) && s.trSelected)}
@@ -828,7 +1197,7 @@ function MilestonesTable({ data }: { data: PortfolioData }) {
                 </td>
                 {/* Project — read-only FK display */}
                 <td className={mergeClasses(s.td, s.tdReadonly)}>
-                  <span title={m.projectId}>{projectMap.get(m.projectId) ?? m.projectId}</span>
+                  <span title={m.projectId}>{m._projectTitle}</span>
                 </td>
                 <EditableCell
                   value={m.name}
@@ -851,6 +1220,296 @@ function MilestonesTable({ data }: { data: PortfolioData }) {
                 />
               </tr>
             ))}
+            {visibleRows.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ textAlign: "center", padding: "24px", color: tokens.colorNeutralForeground3 }}>
+                  No milestones match "{filterText}"
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+// ─── Quarterly Milestones table ───────────────────────────────────────────────
+
+const EMPTY_QM_DRAFT: QuarterlyMilestoneInput = {
+  portfolioArea: QUARTERLY_PORTFOLIO_AREAS[0],
+  subGroup: "",
+  initiative: "",
+  initiativeDescription: "",
+  milestone: "",
+  targetDate: "",
+  dateLabel: "",
+  notes: "",
+};
+
+function QuarterlyMilestonesTable() {
+  const s = useStyles();
+  const [milestones, setMilestones] = useState<QuarterlyMilestone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+  const { filterText, setFilterText, sort, toggleSort } = useSortFilter();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [draft, setDraft] = useState<QuarterlyMilestoneInput>(EMPTY_QM_DRAFT);
+  const [addSaving, setAddSaving] = useState(false);
+
+  useEffect(() => {
+    repository
+      .getQuarterlyMilestones()
+      .then((data) => { setMilestones(data); setLoading(false); })
+      .catch((err: unknown) => {
+        setFetchError(err instanceof Error ? err.message : "Failed to load quarterly milestones.");
+        setLoading(false);
+      });
+  }, []);
+
+  const rows = useMemo(
+    () => milestones as unknown as Record<string, unknown>[],
+    [milestones]
+  );
+
+  const visibleRows = useMemo(() => {
+    const filtered = filterRows(rows, filterText, (r) =>
+      [r.portfolioArea, r.subGroup ?? "", r.initiative, r.milestone,
+       r.targetDate, r.notes ?? ""].join(" ")
+    );
+    return sortRows(filtered, sort) as unknown as QuarterlyMilestone[];
+  }, [rows, filterText, sort]);
+
+  const allChecked =
+    visibleRows.length > 0 && visibleRows.every((r) => selected.has(r.id));
+
+  const toggleAll = () =>
+    setSelected(
+      allChecked
+        ? new Set([...selected].filter((id) => !visibleRows.find((r) => r.id === id)))
+        : new Set([...selected, ...visibleRows.map((r) => r.id)])
+    );
+  const toggleRow = (id: string) => {
+    const next = new Set(selected);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setSelected(next);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete ${selected.size} quarterly milestone(s)? This cannot be undone.`)) return;
+    setDeleting(true);
+    for (const id of selected) {
+      await repository.deleteQuarterlyMilestone(id);
+      setMilestones((prev) => prev.filter((m) => m.id !== id));
+    }
+    setSelected(new Set());
+    setDeleting(false);
+  };
+
+  const saveCell = useCallback(
+    async (m: QuarterlyMilestone, patch: Partial<QuarterlyMilestone>) => {
+      const updated = await repository.upsertQuarterlyMilestone({
+        id:                    m.id,
+        portfolioArea:         (patch.portfolioArea         ?? m.portfolioArea) as PortfolioArea,
+        subGroup:              patch.subGroup               ?? m.subGroup,
+        initiative:            patch.initiative             ?? m.initiative,
+        initiativeDescription: patch.initiativeDescription  ?? m.initiativeDescription,
+        milestone:             patch.milestone              ?? m.milestone,
+        targetDate:            patch.targetDate             ?? m.targetDate,
+        dateLabel:             patch.dateLabel              ?? m.dateLabel,
+        notes:                 patch.notes                  ?? m.notes,
+      });
+      setMilestones((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    },
+    []
+  );
+
+  const handleAddSave = async () => {
+    if (!draft.initiative.trim() || !draft.milestone.trim()) return;
+    setAddSaving(true);
+    try {
+      const created = await repository.upsertQuarterlyMilestone(draft);
+      setMilestones((prev) => [...prev, created]);
+      setShowAddForm(false);
+      setDraft(EMPTY_QM_DRAFT);
+    } finally {
+      setAddSaving(false);
+    }
+  };
+
+  const setDraftField = (key: keyof QuarterlyMilestoneInput, value: string) =>
+    setDraft((prev) => ({ ...prev, [key]: value }));
+
+  if (loading) {
+    return <Text style={{ padding: "24px 0", color: tokens.colorNeutralForeground3 }}>Loading quarterly milestones…</Text>;
+  }
+
+  if (fetchError) {
+    return (
+      <div style={{
+        padding: "16px", marginTop: 12,
+        background: tokens.colorStatusDangerBackground1,
+        border: `1px solid ${tokens.colorStatusDangerBorder1}`,
+        borderRadius: tokens.borderRadiusMedium,
+        color: tokens.colorStatusDangerForeground1,
+        fontSize: 13,
+      }}>
+        <strong>Failed to load quarterly milestones:</strong> {fetchError}
+        <br />
+        <span style={{ opacity: 0.8 }}>
+          {fetchError.includes("Functions backend")
+            ? "Set VITE_USE_FUNCTIONS=true and deploy the Azure Functions host to use this feature with a live backend."
+            : "Check the browser console for details."}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {selected.size > 0 && (
+        <BulkToolbar
+          count={selected.size}
+          onClearSelection={() => setSelected(new Set())}
+          actions={[
+            { label: deleting ? "Deleting…" : "Delete selected", variant: "danger" as const, onClick: handleDelete },
+          ]}
+        />
+      )}
+
+      <div className={s.filterBar}>
+        <input
+          className={s.filterInput}
+          type="search"
+          placeholder="Filter quarterly milestones…"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          aria-label="Filter quarterly milestones"
+        />
+        <span className={s.filterCount}>
+          {visibleRows.length} / {milestones.length}
+        </span>
+        {filterText && (
+          <Button size="small" appearance="subtle" onClick={() => setFilterText("")}>
+            Clear
+          </Button>
+        )}
+        <Button
+          size="small"
+          appearance="primary"
+          icon={<Icon name="add" size={14} />}
+          onClick={() => setShowAddForm(true)}
+          disabled={showAddForm}
+        >
+          Add milestone
+        </Button>
+      </div>
+
+      <div className={s.tableWrap}>
+        <table className={s.table} style={{ minWidth: 1100 }}>
+          <thead className={s.thead}>
+            <tr>
+              <th className={s.thCheck}>
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Select all" />
+              </th>
+              <SortableHeader label="Portfolio Area"   sortKey="portfolioArea"         sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Sub-group"        sortKey="subGroup"              sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Initiative"       sortKey="initiative"            sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Init. Desc."      sortKey="initiativeDescription" sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Milestone"        sortKey="milestone"             sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Target Date"      sortKey="targetDate"            sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Date Label"       sortKey="dateLabel"             sort={sort} onSort={toggleSort} />
+              <SortableHeader label="Notes"            sortKey="notes"                 sort={sort} onSort={toggleSort} />
+            </tr>
+          </thead>
+          <tbody>
+            {/* ── Add-new-row form ── */}
+            {showAddForm && (
+              <tr style={{ backgroundColor: tokens.colorBrandBackground2 }}>
+                <td className={s.tdCheck} />
+                <td className={s.td}>
+                  <select
+                    value={draft.portfolioArea}
+                    autoFocus
+                    style={{ width: "100%", fontSize: "inherit" }}
+                    onChange={(e) => setDraftField("portfolioArea", e.target.value)}
+                  >
+                    {QUARTERLY_PORTFOLIO_AREAS.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                </td>
+                <td className={s.td}>
+                  <input style={{ width: "100%", fontSize: "inherit" }} placeholder="Sub-group…"
+                    value={draft.subGroup ?? ""} onChange={(e) => setDraftField("subGroup", e.target.value)} />
+                </td>
+                <td className={s.td}>
+                  <input style={{ width: "100%", fontSize: "inherit" }} placeholder="Initiative *"
+                    value={draft.initiative} onChange={(e) => setDraftField("initiative", e.target.value)} />
+                </td>
+                <td className={s.td}>
+                  <input style={{ width: "100%", fontSize: "inherit" }} placeholder="Description…"
+                    value={draft.initiativeDescription ?? ""} onChange={(e) => setDraftField("initiativeDescription", e.target.value)} />
+                </td>
+                <td className={s.td}>
+                  <input style={{ width: "100%", fontSize: "inherit" }} placeholder="Milestone *"
+                    value={draft.milestone} onChange={(e) => setDraftField("milestone", e.target.value)} />
+                </td>
+                <td className={s.td}>
+                  <input type="date" style={{ width: "100%", fontSize: "inherit" }}
+                    value={draft.targetDate} onChange={(e) => setDraftField("targetDate", e.target.value)} />
+                </td>
+                <td className={s.td}>
+                  <input style={{ width: "100%", fontSize: "inherit" }} placeholder="e.g. Q3"
+                    value={draft.dateLabel ?? ""} onChange={(e) => setDraftField("dateLabel", e.target.value)} />
+                </td>
+                <td className={s.td} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <input style={{ flex: 1, fontSize: "inherit" }} placeholder="Notes…"
+                    value={draft.notes ?? ""} onChange={(e) => setDraftField("notes", e.target.value)} />
+                  <Button size="small" appearance="primary" onClick={() => void handleAddSave()} disabled={addSaving || !draft.initiative.trim() || !draft.milestone.trim()}>
+                    {addSaving ? "Saving…" : "Save"}
+                  </Button>
+                  <Button size="small" appearance="subtle" onClick={() => { setShowAddForm(false); setDraft(EMPTY_QM_DRAFT); }}>
+                    Cancel
+                  </Button>
+                </td>
+              </tr>
+            )}
+
+            {visibleRows.map((m) => (
+              <tr
+                key={m.id}
+                className={mergeClasses(s.tr, selected.has(m.id) && s.trSelected)}
+                onClick={() => toggleRow(m.id)}
+              >
+                <td className={s.tdCheck} onClick={(e) => e.stopPropagation()}>
+                  <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleRow(m.id)}
+                    aria-label={`Select ${m.milestone}`} />
+                </td>
+                <EditableCell
+                  value={m.portfolioArea}
+                  type="select"
+                  options={[...QUARTERLY_PORTFOLIO_AREAS]}
+                  onSave={(v) => saveCell(m, { portfolioArea: v as PortfolioArea })}
+                />
+                <EditableCell value={m.subGroup ?? ""}             onSave={(v) => saveCell(m, { subGroup:              v || undefined })} />
+                <EditableCell value={m.initiative}                 onSave={(v) => saveCell(m, { initiative:            v })} />
+                <EditableCell value={m.initiativeDescription ?? ""} onSave={(v) => saveCell(m, { initiativeDescription: v || undefined })} />
+                <EditableCell value={m.milestone}                  onSave={(v) => saveCell(m, { milestone:             v })} />
+                <EditableCell value={m.targetDate}   type="date"   onSave={(v) => saveCell(m, { targetDate:            v })} />
+                <EditableCell value={m.dateLabel ?? ""}            onSave={(v) => saveCell(m, { dateLabel:             v || undefined })} />
+                <EditableCell value={m.notes ?? ""}               onSave={(v) => saveCell(m, { notes:                 v || undefined })} />
+              </tr>
+            ))}
+            {visibleRows.length === 0 && !showAddForm && (
+              <tr>
+                <td colSpan={9} style={{ textAlign: "center", padding: "24px", color: tokens.colorNeutralForeground3 }}>
+                  {filterText ? `No milestones match "${filterText}"` : "No quarterly milestones yet — click Add milestone to start."}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -860,12 +1519,13 @@ function MilestonesTable({ data }: { data: PortfolioData }) {
 
 // ─── Tab switcher ─────────────────────────────────────────────────────────────
 
-type TabId = "projects" | "engagements" | "milestones";
+type TabId = "projects" | "engagements" | "milestones" | "quarterly-milestones";
 
-const TABS: { id: TabId; label: string; count: (d: PortfolioData) => number }[] = [
-  { id: "projects", label: "Projects", count: (d) => d.projects.length },
-  { id: "engagements", label: "Engagements", count: (d) => d.engagements.length },
-  { id: "milestones", label: "Milestones", count: (d) => d.milestones.length },
+const TABS: { id: TabId; label: string; count?: (d: PortfolioData) => number }[] = [
+  { id: "projects",              label: "Projects",              count: (d) => d.projects.length },
+  { id: "engagements",           label: "Engagements",           count: (d) => d.engagements.length },
+  { id: "milestones",            label: "Milestones",            count: (d) => d.milestones.length },
+  { id: "quarterly-milestones",  label: "Quarterly Milestones" },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -893,15 +1553,18 @@ function AdminContent({ data }: { data: PortfolioData }) {
             onClick={() => setActiveTab(t.id)}
           >
             {t.label}{" "}
-            <span style={{ fontWeight: 400, opacity: 0.7 }}>({t.count(data)})</span>
+            {t.count && (
+              <span style={{ fontWeight: 400, opacity: 0.7 }}>({t.count(data)})</span>
+            )}
           </button>
         ))}
       </div>
 
       {/* Active table */}
-      {activeTab === "projects" && <ProjectsTable data={data} />}
-      {activeTab === "engagements" && <EngagementsTable data={data} />}
-      {activeTab === "milestones" && <MilestonesTable data={data} />}
+      {activeTab === "projects"             && <ProjectsTable data={data} />}
+      {activeTab === "engagements"          && <EngagementsTable data={data} />}
+      {activeTab === "milestones"           && <MilestonesTable data={data} />}
+      {activeTab === "quarterly-milestones" && <QuarterlyMilestonesTable />}
     </>
   );
 }

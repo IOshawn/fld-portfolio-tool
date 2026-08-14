@@ -19,7 +19,8 @@ import { PageHeader } from "../components/PageHeader";
 import { PortfolioGate } from "../components/PortfolioGate";
 import { SectionCard } from "../components/cards";
 import { Icon } from "../components/Icon";
-import type { Project, PortfolioData } from "../types/models";
+import { PeoplePicker } from "../components/PeoplePicker";
+import type { Project, PortfolioData, PersonRef } from "../types/models";
 import {
   STAGES,
   STATUSES,
@@ -173,7 +174,7 @@ function ProjectUpdateForm({
   const [summary, setSummary] = useState("");
   const [risks, setRisks] = useState("");
   const [decisions, setDecisions] = useState("");
-  const [submittedBy, setSubmittedBy] = useState("");
+  const [submittedBy, setSubmittedBy] = useState<PersonRef>({ name: "", email: "", corpId: "" });
   const [newStatus, setNewStatus] = useState("");
   const [newStage, setNewStage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -184,7 +185,7 @@ function ProjectUpdateForm({
     if (initialProject) setProjectId(initialProject);
   }, [initialProject]);
 
-  const valid = projectId && date && summary.trim() && submittedBy.trim();
+  const valid = projectId && date && summary.trim() && submittedBy.name.trim();
 
   const reset = () => {
     setSummary("");
@@ -193,6 +194,7 @@ function ProjectUpdateForm({
     setNewStatus("");
     setNewStage("");
     setDate(todayISO());
+    setSubmittedBy({ name: "", email: "", corpId: "" });
     setSaved(null);
     setError(null);
   };
@@ -208,7 +210,7 @@ function ProjectUpdateForm({
         summary: summary.trim(),
         risks: risks.trim() || "None this period.",
         decisionsRequired: decisions.trim() || "None this period.",
-        submittedBy: submittedBy.trim(),
+        submittedBy,
         newStatus: (newStatus || undefined) as never,
         newStage: (newStage || undefined) as never,
       });
@@ -232,7 +234,12 @@ function ProjectUpdateForm({
           <input type="date" className={s.dateInput} value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
         <Field label="Submitted by" required>
-          <Input value={submittedBy} onChange={(_, d) => setSubmittedBy(d.value)} placeholder="Your name" />
+          <PeoplePicker
+            value={submittedBy}
+            onChange={(p) => setSubmittedBy(p)}
+            placeholder="Search by name or email…"
+            required
+          />
         </Field>
       </div>
       <Field label="Update summary" required hint="What changed this period?">
@@ -434,7 +441,9 @@ function EditInitiativeForm({ projects }: { projects: Project[] }): JSX.Element 
   const s = useStyles();
   const [projectId, setProjectId] = useState("");
   const [f, setF] = useState({
-    title: "", abbrev: "", portfolio: "", productArea: "", owner: "", sponsor: "",
+    title: "", abbrev: "", portfolio: "", productArea: "",
+    owner: { name: "", email: "", corpId: "" } as PersonRef,
+    sponsor: { name: "", email: "", corpId: "" } as PersonRef,
     stage: "", status: "", startDate: "", endDate: "", fundingSource: "",
     outcomeStatement: "", businessValue: "", summary: "", dependencies: "",
   });
@@ -448,7 +457,9 @@ function EditInitiativeForm({ projects }: { projects: Project[] }): JSX.Element 
     if (!p) return;
     setF({
       title: p.title, abbrev: p.abbrev, portfolio: p.portfolio, productArea: p.productArea,
-      owner: p.owner, sponsor: p.sponsor, stage: p.stage, status: p.status,
+      owner: typeof p.owner === "string" ? { name: p.owner as unknown as string, email: "", corpId: "" } : p.owner,
+      sponsor: typeof p.sponsor === "string" ? { name: p.sponsor as unknown as string, email: "", corpId: "" } : p.sponsor,
+      stage: p.stage, status: p.status,
       startDate: p.startDate, endDate: p.endDate, fundingSource: p.fundingSource,
       outcomeStatement: p.outcomeStatement, businessValue: p.businessValue, summary: p.summary,
       dependencies: p.dependencies.join(", "),
@@ -457,7 +468,7 @@ function EditInitiativeForm({ projects }: { projects: Project[] }): JSX.Element 
     setError(null);
   }, [projectId, projects]);
 
-  const valid = projectId && f.title.trim() && f.portfolio.trim() && f.owner.trim() && f.stage && f.status;
+  const valid = projectId && f.title.trim() && f.portfolio.trim() && f.owner.name.trim() && f.stage && f.status;
 
   const submit = async () => {
     if (!valid) return;
@@ -470,8 +481,8 @@ function EditInitiativeForm({ projects }: { projects: Project[] }): JSX.Element 
         abbrev: f.abbrev.trim(),
         portfolio: f.portfolio.trim(),
         productArea: f.productArea.trim(),
-        owner: f.owner.trim(),
-        sponsor: f.sponsor.trim(),
+        owner: f.owner,
+        sponsor: f.sponsor,
         stage: f.stage as never,
         status: f.status as never,
         startDate: f.startDate,
@@ -482,7 +493,7 @@ function EditInitiativeForm({ projects }: { projects: Project[] }): JSX.Element 
         summary: f.summary.trim(),
         dependencies: f.dependencies.split(/[;,]/).map((d) => d.trim()).filter(Boolean),
       });
-      setSaved(`${p.title} updated — owner ${p.owner}, portfolio ${p.portfolio}.`);
+      setSaved(`${p.title} updated — owner ${typeof p.owner === "object" ? p.owner.name : p.owner}, portfolio ${p.portfolio}.`);
     } catch {
       setError("Could not save changes. Please try again.");
     } finally {
@@ -516,10 +527,19 @@ function EditInitiativeForm({ projects }: { projects: Project[] }): JSX.Element 
           </div>
           <div className={s.row2}>
             <Field label="Owner" required>
-              <Input value={f.owner} onChange={(_, d) => upd({ owner: d.value })} />
+              <PeoplePicker
+                value={f.owner}
+                onChange={(p) => upd({ owner: p })}
+                placeholder="Search by name or email…"
+                required
+              />
             </Field>
             <Field label="Sponsor">
-              <Input value={f.sponsor} onChange={(_, d) => upd({ sponsor: d.value })} />
+              <PeoplePicker
+                value={f.sponsor}
+                onChange={(p) => upd({ sponsor: p })}
+                placeholder="Search by name or email…"
+              />
             </Field>
           </div>
           <div className={s.row2}>

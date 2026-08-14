@@ -5,7 +5,7 @@
  * The flight number field is stored for display and is the foundation
  * for future API integration.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   OverlayDrawer,
   DrawerHeader,
@@ -19,13 +19,16 @@ import {
   Divider,
   Text,
   Spinner,
+  Checkbox,
   makeStyles,
   shorthands,
   tokens,
 } from "@fluentui/react-components";
 import { Icon } from "./Icon";
-import type { TravelEntry, Project } from "../types/models";
-import { SITES, WORK_AREAS, TRAVEL_STATUSES } from "../types/models";
+import { PeoplePicker } from "./PeoplePicker";
+import type { TravelEntry, Project, PersonRef } from "../types/models";
+import { SITES, WORK_AREAS, TRAVEL_STATUSES, personName } from "../types/models";
+import { formatDate } from "../lib/format";
 
 const useStyles = makeStyles({
   body: {
@@ -76,10 +79,36 @@ const useStyles = makeStyles({
   deleteBtn: {
     marginRight: "auto",
   },
+  assocList: {
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap("4px"),
+    marginTop: "4px",
+    maxHeight: "200px",
+    overflowY: "auto",
+    ...shorthands.padding("4px", "0"),
+  },
+  assocOption: {
+    display: "flex",
+    flexDirection: "column",
+    paddingLeft: "4px",
+  },
+  assocMeta: {
+    fontSize: "11px",
+    color: tokens.colorNeutralForeground3,
+    marginLeft: "24px",
+    marginTop: "-2px",
+  },
+  assocEmpty: {
+    fontSize: "12px",
+    color: tokens.colorNeutralForeground3,
+    fontStyle: "italic",
+    ...shorthands.padding("4px", "0"),
+  },
 });
 
 type FormState = {
-  person: string;
+  person: PersonRef;
   initiativeId: string;
   site: string;
   workArea: string;
@@ -89,10 +118,11 @@ type FormState = {
   flightNumber: string;
   description: string;
   status: string;
+  associatedWith: string[];
 };
 
 const BLANK: FormState = {
-  person: "",
+  person: { name: "", email: "", corpId: "" },
   initiativeId: "",
   site: "MDO",
   workArea: "OE/BI",
@@ -102,6 +132,7 @@ const BLANK: FormState = {
   flightNumber: "",
   description: "",
   status: "Planned",
+  associatedWith: [],
 };
 
 interface Props {
@@ -114,10 +145,23 @@ interface Props {
   onClose: () => void;
 }
 
+/** Add / remove an id from an array, returning a new array. */
+function toggleId(arr: string[], id: string): string[] {
+  return arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id];
+}
+
+/** Add 'days' calendar days to an ISO date string. */
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 export function TravelEntryForm({
   open,
   entry,
   projects,
+  allEntries,
   onSave,
   onDelete,
   onClose,
@@ -133,8 +177,12 @@ export function TravelEntryForm({
   // Populate form when entry changes
   useEffect(() => {
     if (entry) {
+      const person: PersonRef =
+        typeof entry.person === "string"
+          ? { name: entry.person as unknown as string, email: "", corpId: "" }
+          : entry.person;
       setForm({
-        person: entry.person,
+        person,
         initiativeId: entry.initiativeId,
         site: entry.site,
         workArea: entry.workArea,
@@ -144,6 +192,7 @@ export function TravelEntryForm({
         flightNumber: entry.flightNumber ?? "",
         description: entry.description,
         status: entry.status,
+        associatedWith: entry.associatedWith ?? [],
       });
     } else {
       setForm(BLANK);
@@ -153,8 +202,37 @@ export function TravelEntryForm({
 
   const set = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
 
+  /**
+   * Candidate entries for "Travelling with":
+   * - Same site as the currently selected site, OR
+   * - Date ranges overlap or are within ±7 days of each other
+   * - Excludes the entry being edited
+   */
+  const associationCandidates = useMemo(() => {
+    const currentId = entry?.id ?? "";
+    const dep = form.departureDate;
+    const ret = form.returnDate;
+
+    return allEntries.filter((e) => {
+      if (e.id === currentId) return false; // exclude self
+
+      const sameSite = e.site === form.site;
+
+      let nearbyDates = false;
+      if (dep && ret) {
+        const windowStart = addDays(dep, -7);
+        const windowEnd = addDays(ret, 7);
+        nearbyDates = e.departureDate <= windowEnd && e.returnDate >= windowStart;
+      } else if (dep) {
+        nearbyDates = e.departureDate <= addDays(dep, 7) && e.returnDate >= addDays(dep, -7);
+      }
+
+      return sameSite || nearbyDates;
+    });
+  }, [allEntries, entry?.id, form.site, form.departureDate, form.returnDate]);
+
   const validate = (): string | null => {
-    if (!form.person.trim()) return "Person name is required.";
+    if (!form.person.name.trim()) return "Person name is required.";
     if (!form.departureDate) return "Departure date is required.";
     if (!form.returnDate) return "Return date is required.";
     if (form.returnDate < form.departureDate) return "Return date must be on or after departure date.";
@@ -169,7 +247,7 @@ export function TravelEntryForm({
     try {
       await onSave({
         ...(entry?.id ? { id: entry.id } : {}),
-        person: form.person.trim(),
+        person: form.person,
         initiativeId: form.initiativeId,
         site: form.site as TravelEntry["site"],
         workArea: form.workArea as TravelEntry["workArea"],
@@ -179,7 +257,7 @@ export function TravelEntryForm({
         flightNumber: form.flightNumber.trim() || undefined,
         description: form.description.trim(),
         status: form.status as TravelEntry["status"],
-        associatedWith: entry?.associatedWith ?? [],
+        associatedWith: form.associatedWith,
       });
       onClose();
     } catch (e) {
@@ -224,10 +302,11 @@ export function TravelEntryForm({
           <Text className={s.section}>Person &amp; trip</Text>
 
           <Field label="Person" required>
-            <Input
+            <PeoplePicker
               value={form.person}
-              onChange={(_, d) => set({ person: d.value })}
-              placeholder="e.g. Sarah Chen"
+              onChange={(p) => set({ person: p })}
+              placeholder="Search by name or email…"
+              required
             />
           </Field>
 
@@ -305,6 +384,45 @@ export function TravelEntryForm({
           </div>
 
           <Divider style={{ marginTop: "16px" }} />
+
+          {/* Association picker */}
+          <Text className={s.section}>Travelling with</Text>
+          <Field
+            label="Select colleagues sharing this trip"
+            hint={
+              associationCandidates.length === 0
+                ? "No nearby entries — fill in site and dates to see suggestions."
+                : `${associationCandidates.length} entr${associationCandidates.length === 1 ? "y" : "ies"} at the same site or within ±7 days`
+            }
+          >
+            <div className={s.assocList}>
+              {associationCandidates.length === 0 ? (
+                <span className={s.assocEmpty}>
+                  No entries match the current site / date range.
+                </span>
+              ) : (
+                associationCandidates.map((e) => {
+                  const checked = form.associatedWith.includes(e.id);
+                  const label = personName(e.person);
+                  const meta = `${e.site} · ${formatDate(e.departureDate)} – ${formatDate(e.returnDate)}`;
+                  return (
+                    <div key={e.id} className={s.assocOption}>
+                      <Checkbox
+                        checked={checked}
+                        onChange={() =>
+                          set({ associatedWith: toggleId(form.associatedWith, e.id) })
+                        }
+                        label={label}
+                      />
+                      <span className={s.assocMeta}>{meta}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </Field>
+
+          <Divider style={{ marginTop: "8px" }} />
 
           <Field label="Description / reason for trip">
             <Textarea

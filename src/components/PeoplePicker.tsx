@@ -1,25 +1,30 @@
 /**
- * PeoplePicker — single-select searchable people picker.
+ * PeoplePicker — single-select searchable people picker backed by Microsoft Graph.
  *
- * Filters a local people.json directory as the user types. Shows display name
- * and corp email for each match. Selecting a person saves their canonical
- * display name. Allows free-text fallback if the person isn't in the list.
+ * In production (Azure SWA with Entra ID): searches Azure AD live via Graph API
+ * with debounced autocomplete, returning the full person identity (name, email, corpId).
  *
- * Structured so the data source can be swapped for Microsoft Graph later
- * without changing the component's props or the fields that consume it.
+ * In Replit / offline: falls back to the local people.json directory automatically
+ * when Graph is unavailable — no config change needed.
+ *
+ * Selecting a person always emits a full PersonRef. Free-text fallback emits
+ * { name, email: "", corpId: "" } so callers always receive a consistent type.
  */
 import { useState, useRef, useEffect, useCallback } from "react";
-import { makeStyles, shorthands, tokens, Text } from "@fluentui/react-components";
+import { makeStyles, shorthands, tokens, Text, Spinner } from "@fluentui/react-components";
 import { Icon } from "./Icon";
+import type { PersonRef } from "../types/models";
+import { personName } from "../types/models";
+import { graphSearchUsers } from "../services/graphClient";
 import rawPeople from "../data/people.json";
 
-interface Person {
+interface LocalPerson {
   name: string;
   corpId: string;
   email: string;
 }
 
-const PEOPLE: Person[] = rawPeople as Person[];
+const LOCAL_PEOPLE: LocalPerson[] = rawPeople as LocalPerson[];
 
 function initials(name: string): string {
   return name
@@ -74,6 +79,12 @@ const useStyles = makeStyles({
     padding: 0,
     lineHeight: 1,
     ":hover": { color: tokens.colorNeutralForeground1 },
+  },
+  spinnerWrap: {
+    position: "absolute",
+    right: "8px",
+    display: "inline-flex",
+    alignItems: "center",
   },
   dropdown: {
     position: "absolute",
@@ -146,64 +157,145 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  /** Current value — the display name string stored on the project. */
-  value: string;
-  /** Called whenever the value should change (on select or on free-text blur). */
-  onChange: (name: string) => void;
+  /** Current value — accepts a full PersonRef or a legacy bare-name string. */
+  value: PersonRef | string;
+  /** Called whenever the selected person changes. Always emits a full PersonRef. */
+  onChange: (person: PersonRef) => void;
   placeholder?: string;
   /** Mark field as required (passes through to the underlying input). */
   required?: boolean;
 }
 
-export function PeoplePicker({ value, onChange, placeholder = "Search by name or email…", required }: Props): JSX.Element {
+const DEBOUNCE_MS = 280;
+
+export function PeoplePicker({
+  value,
+  onChange,
+  placeholder = "Search by name or email…",
+  required,
+}: Props): JSX.Element {
   const s = useStyles();
 
-  // query drives both the displayed input text and the dropdown filter
-  const [query, setQuery] = useState(value);
+  const displayName = personName(value);
+
+  // query drives the displayed input text and dropdown filter
+  const [query, setQuery] = useState(displayName);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  // Results: null = not yet searched, [] = no results
+  const [graphResults, setGraphResults] = useState<PersonRef[] | null>(null);
+  const [graphAvailable, setGraphAvailable] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync when the parent resets the value (e.g. drawer opens)
   useEffect(() => {
-    setQuery(value);
+    setQuery(personName(value));
   }, [value]);
 
-  // Close on outside click
+  // Close on outside click and commit free-text
   useEffect(() => {
     function handle(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
-        // Commit whatever was typed as a free-text value
-        onChange(query.trim());
       }
     }
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
-  }, [query, onChange]);
+  }, []);
 
-  const filtered = PEOPLE.filter((p) => {
-    if (!query) return true;
+  /** Search Graph with debounce; fall back to local list on failure. */
+  const doSearch = useCallback(async (q: string) => {
+    if (!q || q.length < 2) {
+      setGraphResults(null);
+      setLoading(false);
+      return;
+    }
+
+    // If Graph already known unavailable, skip
+    if (graphAvailable === false) {
+      setGraphResults(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const results = await graphSearchUsers(q);
+      setGraphResults(results);
+      setGraphAvailable(true);
+    } catch {
+      // Graph unavailable (Replit dev, no auth token, etc.) — use local list
+      setGraphAvailable(false);
+      setGraphResults(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [graphAvailable]);
+
+  const handleQueryChange = (q: string) => {
+    setQuery(q);
+    setOpen(true);
+
+    // Debounce Graph search
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => doSearch(q), DEBOUNCE_MS);
+  };
+
+  // Compute displayed options: Graph results if available, otherwise local filter
+  const options: PersonRef[] = (() => {
+    if (graphAvailable && graphResults !== null) {
+      return graphResults;
+    }
+    // Local fallback
+    if (!query) return LOCAL_PEOPLE;
     const q = query.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.email.toLowerCase().includes(q) ||
-      p.corpId.toLowerCase().includes(q)
+    return LOCAL_PEOPLE.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.corpId.toLowerCase().includes(q)
     );
-  });
+  })();
 
-  const handleSelect = useCallback((person: Person) => {
-    setQuery(person.name);
-    onChange(person.name);
-    setOpen(false);
-  }, [onChange]);
+  const handleSelect = useCallback(
+    (person: PersonRef) => {
+      setQuery(person.name);
+      onChange(person);
+      setOpen(false);
+      setGraphResults(null);
+    },
+    [onChange]
+  );
 
   const handleClear = useCallback(() => {
     setQuery("");
-    onChange("");
+    onChange({ name: "", email: "", corpId: "" });
     setOpen(false);
+    setGraphResults(null);
   }, [onChange]);
 
-  const isMatch = PEOPLE.some((p) => p.name === value);
+  const handleBlur = useCallback(() => {
+    setTimeout(() => {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        // User cleared the field — propagate empty so parent state matches displayed text
+        onChange({ name: "", email: "", corpId: "" });
+        return;
+      }
+      // Try to match exactly in local list first, then fall back to free-text
+      const match = LOCAL_PEOPLE.find((p) => p.name.toLowerCase() === trimmed.toLowerCase());
+      onChange(match ?? { name: trimmed, email: "", corpId: "" });
+    }, 150);
+  }, [query, onChange]);
+
+  // Is the current value matched in directory (local or graph)?
+  const isMatch =
+    LOCAL_PEOPLE.some((p) => p.name === displayName) ||
+    (graphAvailable === true && graphResults?.some((p) => p.name === displayName));
+
+  const currentValueRef = typeof value === "object" ? value : null;
+  const hasFullRef = currentValueRef && (currentValueRef.email || currentValueRef.corpId);
 
   return (
     <div className={s.root} ref={containerRef}>
@@ -216,55 +308,60 @@ export function PeoplePicker({ value, onChange, placeholder = "Search by name or
           required={required}
           autoComplete="off"
           onFocus={() => setOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onBlur={() => {
-            // Delay so onMouseDown on an option fires first
-            setTimeout(() => {
-              onChange(query.trim());
-            }, 150);
-          }}
+          onChange={(e) => handleQueryChange(e.target.value)}
+          onBlur={handleBlur}
         />
-        {query && (
+        {loading ? (
+          <span className={s.spinnerWrap}>
+            <Spinner size="extra-tiny" />
+          </span>
+        ) : query ? (
           <button
             type="button"
             className={s.clearBtn}
-            onMouseDown={(e) => { e.preventDefault(); handleClear(); }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleClear();
+            }}
             aria-label="Clear"
           >
             <Icon name="close" size={14} />
           </button>
-        )}
+        ) : null}
       </div>
 
-      {!isMatch && query && (
-        <div className={s.hint}>
-          Not in directory — will be saved as entered.
-        </div>
+      {!isMatch && !hasFullRef && query && !loading && (
+        <div className={s.hint}>Not in directory — will be saved as entered.</div>
       )}
 
       {open && (
         <div className={s.dropdown}>
-          {filtered.length === 0 ? (
+          {options.length === 0 ? (
             <div className={s.noResults}>
-              <Text size={200}>No matches for "{query}" — name will be saved as entered.</Text>
+              <Text size={200}>
+                No matches for &ldquo;{query}&rdquo; — name will be saved as entered.
+              </Text>
             </div>
           ) : (
-            filtered.map((p) => (
+            options.map((p, i) => (
               <div
-                key={p.corpId}
-                className={`${s.option} ${p.name === value ? s.optionSelected : ""}`}
+                key={p.corpId || p.email || `${p.name}-${i}`}
+                className={`${s.option} ${
+                  p.name === displayName ? s.optionSelected : ""
+                }`}
                 onMouseDown={(e) => {
                   e.preventDefault(); // prevent blur before click
                   handleSelect(p);
                 }}
               >
-                <span className={s.avatar} aria-hidden>{initials(p.name)}</span>
+                <span className={s.avatar} aria-hidden>
+                  {initials(p.name)}
+                </span>
                 <div className={s.optionText}>
                   <span className={s.optionName}>{p.name}</span>
-                  <span className={s.optionEmail}>{p.email}</span>
+                  {p.email && (
+                    <span className={s.optionEmail}>{p.email}</span>
+                  )}
                 </div>
               </div>
             ))

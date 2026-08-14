@@ -11,7 +11,9 @@
     "flightNumber": "QF712",
     "description": "On-site support for Digital Shift Handover go-live with OE/BI team at Mesa A.",
     "status": "Planned",
-    "associatedWith": ["t-002"]
+    "associatedWith": [
+      "t-002"
+    ]
   },
   {
     "id": "t-002",
@@ -25,7 +27,9 @@
     "flightNumber": "QF712",
     "description": "Travelling with Sarah Chen to support Shift Handover OE/BI training at Mesa A.",
     "status": "Planned",
-    "associatedWith": ["t-001"]
+    "associatedWith": [
+      "t-001"
+    ]
   },
   {
     "id": "t-003",
@@ -38,7 +42,7 @@
     "returnDate": "2026-07-18",
     "flightNumber": "VA1842",
     "description": "Cadence Tool prototype workshop with Production team at West Angelas.",
-    "status": "Returned",
+    "status": "Booked",
     "associatedWith": []
   },
   {
@@ -67,7 +71,9 @@
     "flightNumber": "QF820",
     "description": "Readiness assessment for Shift Handover Drill & Blast rollout at Greater Tom Price.",
     "status": "Planned",
-    "associatedWith": ["t-006"]
+    "associatedWith": [
+      "t-006"
+    ]
   },
   {
     "id": "t-006",
@@ -81,7 +87,9 @@
     "flightNumber": "QF820",
     "description": "Readiness assessment — Drill & Blast at GTP, co-travelling with Lena Hoffmann.",
     "status": "Planned",
-    "associatedWith": ["t-005"]
+    "associatedWith": [
+      "t-005"
+    ]
   },
   {
     "id": "t-007",
@@ -108,7 +116,7 @@
     "returnDate": "2026-07-11",
     "flightNumber": "VA2014",
     "description": "DPI pilot review and data quality workshop at Yandicoogina.",
-    "status": "Returned",
+    "status": "Booked",
     "associatedWith": []
   },
   {
@@ -122,7 +130,7 @@
     "returnDate": "2026-07-24",
     "flightNumber": "QF714",
     "description": "Shift Handover MEM embedded session at Brockman 4.",
-    "status": "Travelling",
+    "status": "Booked",
     "associatedWith": []
   },
   {

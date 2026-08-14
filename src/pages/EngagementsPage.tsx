@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { makeStyles, shorthands, tokens, Text, Button, TabList, Tab } from "@fluentui/react-components";
 import { PageHeader } from "../components/PageHeader";
@@ -41,43 +41,7 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
     ":hover": { backgroundColor: tokens.colorNeutralBackground1Hover },
   },
-  // Mobile scroll hint banner for Matrix / Heatmap tabs
-  scrollHint: {
-    display: "none",
-    "@media (max-width: 820px)": {
-      display: "flex",
-      alignItems: "center",
-      columnGap: "8px",
-      ...shorthands.padding("10px", "14px"),
-      ...shorthands.borderRadius("8px"),
-      backgroundColor: tokens.colorNeutralBackground2,
-      ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
-      color: tokens.colorNeutralForeground2,
-      fontSize: "13px",
-      marginBottom: "12px",
-    },
-  },
-  scrollHintIcon: {
-    flexShrink: 0,
-    color: tokens.colorBrandForeground2,
-  },
 });
-
-/** Detect whether we're on a narrow screen. */
-function useIsMobile(breakpoint = 820): boolean {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth <= breakpoint : false
-  );
-  const ref = useRef(breakpoint);
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${ref.current}px)`);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    setIsMobile(mq.matches);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return isMobile;
-}
 
 function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
   const s = useStyles();
@@ -85,17 +49,14 @@ function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
   const [params] = useSearchParams();
   const initialInitiative = params.get("initiative") ?? "";
 
-  const isMobile = useIsMobile();
-
   const [filters, setFilters] = useState<EngagementFilters>({
     ...EMPTY_ENGAGEMENT_FILTERS,
     initiativeId: initialInitiative,
   });
 
-  // On mobile, default to "By initiative" instead of "Matrix" (which needs horizontal scroll)
   const [tab, setTab] = useState<string>(() => {
     if (initialInitiative) return "initiative";
-    return typeof window !== "undefined" && window.innerWidth <= 820 ? "initiative" : "matrix";
+    return "matrix";
   });
 
   const set = (patch: Partial<EngagementFilters>) => setFilters((f) => ({ ...f, ...patch }));
@@ -120,14 +81,12 @@ function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
 
   const selectedProject = projects.find((p) => p.id === filters.initiativeId);
 
-  const showScrollHint = isMobile && (tab === "matrix" || tab === "heatmap");
-
   // Travel indicator — count entries matching the current site filter (if any)
   const now = new Date();
   const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const travelCount = useMemo(() => {
     const active = (travelEntries ?? []).filter(
-      (e) => e.departureDate <= todayISO && e.returnDate >= todayISO && e.status !== "Cancelled"
+      (e) => e.departureDate <= todayISO && e.returnDate >= todayISO
     );
     if (filters.site) return active.filter((e) => e.site === filters.site).length;
     return active.length;
@@ -235,17 +194,6 @@ function EngagementsContent({ data }: { data: PortfolioData }): JSX.Element {
           <Tab value="initiative">By initiative</Tab>
         </TabList>
       </div>
-
-      {showScrollHint ? (
-        <div className={s.scrollHint}>
-          <span className={s.scrollHintIcon}>
-            <Icon name="roadmap" size={16} />
-          </span>
-          <Text size={200}>
-            Scroll sideways to see the full {tab}. The <strong>By initiative</strong> view works better on mobile.
-          </Text>
-        </div>
-      ) : null}
 
       {tab === "matrix" ? (
         filtered.length === 0 ? (

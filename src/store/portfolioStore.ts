@@ -13,6 +13,7 @@ import {
   type MilestoneInput,
   type EngagementInput,
   type ProjectEdit,
+  type ProjectInput,
   type TravelEntryInput,
 } from "../services";
 
@@ -99,6 +100,17 @@ class PortfolioStore {
     return record;
   }
 
+  async createProject(input: ProjectInput): Promise<Project> {
+    const project = await repository.createProject(input);
+    const data = this.requireData();
+    this.emit({
+      phase: "ready",
+      error: null,
+      data: { ...data, projects: [...data.projects, project] },
+    });
+    return project;
+  }
+
   async updateProject(input: ProjectEdit): Promise<Project> {
     const project = await repository.updateProject(input);
     const data = this.requireData();
@@ -121,24 +133,111 @@ class PortfolioStore {
     return record;
   }
 
+  /**
+   * Save a travel entry and synchronise bidirectional `associatedWith` links.
+   *
+   * When a user selects colleagues to travel with:
+   *   - Newly linked entries have the current entry's ID added to their `associatedWith`.
+   *   - Previously linked entries that were deselected have the current entry's ID removed.
+   *
+   * All reverse-link updates are fired concurrently after the primary save so the
+   * UI stays consistent without requiring a full reload.
+   */
   async saveTravelEntry(input: TravelEntryInput): Promise<TravelEntry> {
-    const record = await repository.upsertTravelEntry(input);
     const data = this.requireData();
-    this.emit({
-      phase: "ready",
-      error: null,
-      data: { ...data, travelEntries: upsertById(data.travelEntries, record) },
-    });
+
+    // 1. Save the primary entry
+    const record = await repository.upsertTravelEntry(input);
+    const savedId = record.id;
+    const newLinks = new Set(input.associatedWith ?? []);
+
+    // 2. Determine which entries previously held a reverse link to this entry
+    //    (they either appeared in the old entry's associatedWith, or already reference
+    //     this ID in their own associatedWith field).
+    const oldEntry = data.travelEntries.find((e) => e.id === savedId);
+    const previouslyLinkedIds = new Set<string>([
+      ...(oldEntry?.associatedWith ?? []),
+      // Also catch any entry that already references this id (data consistency)
+      ...data.travelEntries
+        .filter((e) => e.id !== savedId && e.associatedWith.includes(savedId))
+        .map((e) => e.id),
+    ]);
+
+    // 3. Compute delta
+    const toAdd    = [...newLinks].filter((id) => !previouslyLinkedIds.has(id));
+    const toRemove = [...previouslyLinkedIds].filter((id) => !newLinks.has(id));
+
+    // 4. Build updated copies of all affected entries
+    const affectedEntries = new Map<string, TravelEntry>();
+
+    for (const id of toAdd) {
+      const e = data.travelEntries.find((x) => x.id === id);
+      if (!e) continue;
+      if (!e.associatedWith.includes(savedId)) {
+        affectedEntries.set(id, { ...e, associatedWith: [...e.associatedWith, savedId] });
+      }
+    }
+
+    for (const id of toRemove) {
+      const e = data.travelEntries.find((x) => x.id === id);
+      if (!e) continue;
+      const updated = e.associatedWith.filter((x) => x !== savedId);
+      affectedEntries.set(id, { ...e, associatedWith: updated });
+    }
+
+    // 5. Persist reverse-link updates concurrently (fire-and-forget errors are
+    //    swallowed so the UI doesn't break if one entry can't be patched)
+    const reverseUpdates = [...affectedEntries.values()].map((e) =>
+      repository
+        .upsertTravelEntry({
+          id: e.id,
+          person: e.person,
+          initiativeId: e.initiativeId,
+          site: e.site,
+          workArea: e.workArea,
+          team: e.team,
+          departureDate: e.departureDate,
+          returnDate: e.returnDate,
+          flightNumber: e.flightNumber,
+          description: e.description,
+          status: e.status,
+          associatedWith: e.associatedWith,
+        })
+        .then((updated) => ({ ok: true as const, updated }))
+        .catch(() => ({ ok: false as const, entry: e }))
+    );
+    const results = await Promise.all(reverseUpdates);
+
+    // 6. Patch local state — primary record + all successfully updated reverse links
+    let entries = upsertById(data.travelEntries, record);
+    for (const result of results) {
+      if (result.ok) {
+        entries = upsertById(entries, result.updated);
+      } else {
+        // Optimistically apply the local state change even if the API call failed
+        entries = upsertById(entries, result.entry);
+      }
+    }
+
+    this.emit({ phase: "ready", error: null, data: { ...data, travelEntries: entries } });
     return record;
   }
 
   async deleteTravelEntry(id: string): Promise<void> {
     await repository.deleteTravelEntry(id);
     const data = this.requireData();
+    // Also remove the deleted ID from any reverse links in the local cache
+    const entries = data.travelEntries
+      .filter((e) => e.id !== id)
+      .map((e) =>
+        e.associatedWith.includes(id)
+          ? { ...e, associatedWith: e.associatedWith.filter((x) => x !== id) }
+          : e
+      );
     this.emit({
       phase: "ready",
       error: null,
-      data: { ...data, travelEntries: data.travelEntries.filter((e) => e.id !== id) },
+      data: { ...data, travelEntries: entries },
     });
   }
 

@@ -5,6 +5,7 @@
  * can reliably paint every element without needing class-name resolution.
  */
 import { type QuarterlyMilestone, type PortfolioArea, QUARTERLY_PORTFOLIO_AREAS } from "../types/quarterly";
+import { PORTFOLIO_SHORT_NAMES } from "../types/models";
 import { type QuarterInfo } from "../lib/format";
 import { forwardRef, useMemo } from "react";
 
@@ -19,10 +20,11 @@ const areaKey = (area: PortfolioArea) => `area:${area}`;
 // Colour tokens (self-contained — no Fluent UI)
 // ---------------------------------------------------------------------------
 const AREA_COLORS: Record<PortfolioArea, string> = {
-  "Frontline Maintenance":              "#1d4ed8",
-  "Operations & Decision Intelligence": "#7c3aed",
-  "Frontline HSE":                      "#059669",
-  "Frontline People & AI":              "#b45309",
+  "Maintenance & Work Management":       "#1d4ed8",
+  "Operations & Decision Intelligence":  "#7c3aed",
+  "Workforce Safety":                    "#059669",
+  "Performance & Experience Enablement": "#b45309",
+  "Frontline":                           "#0369a1",
 };
 
 // ---------------------------------------------------------------------------
@@ -109,7 +111,8 @@ function ExportAreaCard({ area, items, quarterEnd, getText }: {
   getText: (key: string, fallback: string) => string;
 }): JSX.Element {
   const color = AREA_COLORS[area];
-  const areaTitle = getText(areaKey(area), area);
+  // Export slides are space-constrained — use the short name as the default card heading.
+  const areaTitle = getText(areaKey(area), PORTFOLIO_SHORT_NAMES[area]);
 
   // Split into main initiatives and sub-groups
   const main = new Map<string, QuarterlyMilestone[]>();

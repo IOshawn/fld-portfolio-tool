@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { makeStyles, shorthands, tokens, Text } from "@fluentui/react-components";
 import type { Milestone, Engagement, Project } from "../types/models";
+import { personName } from "../types/models";
 import { MilestoneStatusBadge, StatusBadge, EngagementStageBadge } from "./Badges";
 import { Icon } from "./Icon";
 import { formatDate, relativeDay } from "../lib/format";
@@ -140,7 +141,7 @@ export function ProjectMiniRow({ project }: { project: Project }): JSX.Element {
           {project.title}
         </Text>
         <Text size={200} className={s.secondary}>
-          {project.owner} · updated {relativeDay(project.lastUpdated)}
+          {personName(project.owner)} · updated {relativeDay(project.lastUpdated)}
         </Text>
       </div>
       <div className={s.right}>

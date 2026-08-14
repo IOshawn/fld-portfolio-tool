@@ -155,6 +155,67 @@ const useStyles = makeStyles({
     zIndex: 1,
     pointerEvents: "none",
   },
+  noDates: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: "8px",
+    display: "flex",
+    alignItems: "center",
+    color: tokens.colorNeutralForeground4,
+    fontSize: "11px",
+    fontStyle: "italic",
+    pointerEvents: "none",
+  },
+  undatedSection: {
+    marginTop: "16px",
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius("12px"),
+    backgroundColor: tokens.colorNeutralBackground1,
+    boxShadow: tokens.shadow2,
+    ...shorthands.overflow("hidden"),
+  },
+  undatedHeader: {
+    ...shorthands.padding("10px", "16px"),
+    ...shorthands.borderBottom("1px", "solid", tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorNeutralBackground2,
+    fontWeight: 600,
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    color: tokens.colorNeutralForeground3,
+  },
+  undatedList: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    ...shorthands.padding("12px", "16px"),
+  },
+  undatedItem: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    ...shorthands.padding("4px", "12px"),
+    ...shorthands.borderRadius("16px"),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorNeutralForeground2,
+    fontSize: "13px",
+    fontWeight: 500,
+    textDecorationLine: "none",
+    transitionProperty: "background-color, box-shadow",
+    transitionDuration: tokens.durationFast,
+    ":hover": {
+      backgroundColor: tokens.colorNeutralBackground4,
+      boxShadow: tokens.shadow4,
+    },
+  },
+  undatedDot: {
+    width: "8px",
+    height: "8px",
+    ...shorthands.borderRadius("50%"),
+    flexShrink: 0,
+  },
 });
 
 export function RoadmapTimeline({ projects }: { projects: Project[] }): JSX.Element {
@@ -164,36 +225,90 @@ export function RoadmapTimeline({ projects }: { projects: Project[] }): JSX.Elem
   const showToday = todayMs > DOMAIN_START && todayMs < DOMAIN_END;
   const todayLeft = `${todayF * 100}%`;
 
+  const datedProjects = projects.filter((p) => p.startDate || p.endDate);
+  const undatedProjects = projects.filter((p) => !p.startDate && !p.endDate);
+
   return (
-    <div className={s.scroll}>
-      <div className={s.grid}>
-        {/* Header */}
-        <div className={s.headRow}>
-          <div className={s.headLabel}>Project</div>
-          <div className={s.headTrack}>
-            {YEARS.map((year) => (
-              <div className={s.headYear} key={year}>
-                <div className={s.headYearLabel}>{year}</div>
-                <div className={s.headQuarters}>
-                  {QUARTERS.map((q) => (
-                    <div className={s.headQuarter} key={q}>
-                      {q}
-                    </div>
-                  ))}
+    <div>
+      <div className={s.scroll}>
+        <div className={s.grid}>
+          {/* Header */}
+          <div className={s.headRow}>
+            <div className={s.headLabel}>Project</div>
+            <div className={s.headTrack}>
+              {YEARS.map((year) => (
+                <div className={s.headYear} key={year}>
+                  <div className={s.headYearLabel}>{year}</div>
+                  <div className={s.headQuarters}>
+                    {QUARTERS.map((q) => (
+                      <div className={s.headQuarter} key={q}>
+                        {q}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Rows */}
+          {datedProjects.map((p) => {
+          const startMs = p.startDate ? parseISO(p.startDate).getTime() : NaN;
+          const endMs = p.endDate ? parseISO(p.endDate).getTime() + 86_400_000 : NaN;
+          const hasProjectDates = !isNaN(startMs) && !isNaN(endMs);
+          const left = hasProjectDates ? fraction(startMs) : 0;
+          const right = hasProjectDates ? fraction(endMs) : 0;
+          const widthPct = hasProjectDates ? Math.max((right - left) * 100, 2) : 0;
+          // Valid stage bars: both dates present, parseable, and not reversed.
+          const stageBars = (p.projectStages ?? []).filter((st) => {
+            if (!st.startDate || !st.endDate) return false;
+            const a = parseISO(st.startDate).getTime();
+            const b = parseISO(st.endDate).getTime();
+            return !isNaN(a) && !isNaN(b) && a <= b;
+          });
+
+          if (stageBars.length > 0) {
+            // Single row per project: all stage bars share one track.
+            return (
+              <div className={s.row} key={p.id}>
+                <div className={s.rowLabel}>
+                  <Text size={300} className={s.rowLabelTitle}>
+                    {p.title}
+                  </Text>
+                  <Text size={200} className={s.rowLabelSub}>
+                    {p.portfolio}
+                  </Text>
+                </div>
+                <div className={s.track}>
+                  {showToday ? <div className={s.todayLine} style={{ left: todayLeft }} /> : null}
+                  {stageBars.map((stage) => {
+                    const sStart = parseISO(stage.startDate).getTime();
+                    const sEnd = parseISO(stage.endDate).getTime() + 86_400_000;
+                    const sLeft = fraction(sStart);
+                    const sRight = fraction(sEnd);
+                    const sWidth = Math.max((sRight - sLeft) * 100, 1);
+                    return (
+                      <Link
+                        key={stage.id}
+                        to={`/projects/${p.id}`}
+                        className={s.bar}
+                        style={{
+                          left: `${sLeft * 100}%`,
+                          width: `${sWidth}%`,
+                          backgroundColor: statusBarColor(stage.status),
+                        }}
+                        title={`${p.title} · ${stage.label} · ${formatDate(stage.startDate)} – ${formatDate(stage.endDate)}`}
+                      >
+                        <span className={s.barLabel}>{stage.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            );
+          }
 
-        {/* Rows */}
-        {projects.map((p) => {
-          const startMs = parseISO(p.startDate).getTime();
-          // include the end day so a bar always has visible width
-          const endMs = parseISO(p.endDate).getTime() + 86_400_000;
-          const left = fraction(startMs);
-          const right = fraction(endMs);
-          const widthPct = Math.max((right - left) * 100, 2);
+          // Default: single project bar
           return (
             <div className={s.row} key={p.id}>
               <div className={s.rowLabel}>
@@ -206,25 +321,51 @@ export function RoadmapTimeline({ projects }: { projects: Project[] }): JSX.Elem
               </div>
               <div className={s.track}>
                 {showToday ? <div className={s.todayLine} style={{ left: todayLeft }} /> : null}
-                <Link
-                  to={`/projects/${p.id}`}
-                  className={s.bar}
-                  style={{
-                    left: `${left * 100}%`,
-                    width: `${widthPct}%`,
-                    backgroundColor: statusBarColor(p.status),
-                  }}
-                  title={`${p.title} · ${p.stage} · ${formatDate(p.startDate)} – ${formatDate(
-                    p.endDate
-                  )}`}
-                >
-                  <span className={s.barLabel}>{p.stage}</span>
-                </Link>
+                {hasProjectDates ? (
+                  <Link
+                    to={`/projects/${p.id}`}
+                    className={s.bar}
+                    style={{
+                      left: `${left * 100}%`,
+                      width: `${widthPct}%`,
+                      backgroundColor: statusBarColor(p.status),
+                    }}
+                    title={`${p.title} · ${p.stage} · ${formatDate(p.startDate)} – ${formatDate(p.endDate)}`}
+                  >
+                    <span className={s.barLabel}>{p.stage}</span>
+                  </Link>
+                ) : (
+                  <span className={s.noDates}>No dates set</span>
+                )}
               </div>
             </div>
           );
-        })}
+          })}
+        </div>
       </div>
+
+      {/* Undated projects section */}
+      {undatedProjects.length > 0 && (
+        <div className={s.undatedSection}>
+          <div className={s.undatedHeader}>Undated projects</div>
+          <div className={s.undatedList}>
+            {undatedProjects.map((p) => (
+              <Link
+                key={p.id}
+                to={`/projects/${p.id}`}
+                className={s.undatedItem}
+                title={p.portfolio ? `${p.title} · ${p.portfolio}` : p.title}
+              >
+                <span
+                  className={s.undatedDot}
+                  style={{ backgroundColor: statusBarColor(p.status) }}
+                />
+                {p.title}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

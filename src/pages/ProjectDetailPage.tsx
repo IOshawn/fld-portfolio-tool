@@ -22,7 +22,11 @@ import { EmptyState } from "../components/states";
 import { StatusBadge, StageBadge, MilestoneStatusBadge } from "../components/Badges";
 import { Icon } from "../components/Icon";
 import { InitiativeEngagementPanel } from "../components/InitiativeEngagementPanel";
-import type { PortfolioData, Project } from "../types/models";
+import { TravelAlertBanner } from "../components/TravelAlertBanner";
+import { NotifyDialog } from "../components/NotifyDialog";
+import type { PortfolioData, Project, PersonRef } from "../types/models";
+import { personName, toPersonRef } from "../types/models";
+import { usePersonTravelAlerts } from "../hooks/usePersonTravelAlerts";
 import {
   milestonesFor,
   updatesFor,
@@ -128,8 +132,17 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
   const navigate = useNavigate();
   const [tab, setTab] = useState<string>("milestones");
   const [editOpen, setEditOpen] = useState(false);
+  const [notifyPerson, setNotifyPerson] = useState<{ person: PersonRef; role: string } | null>(null);
   const openEdit = useCallback(() => setEditOpen(true), []);
   const closeEdit = useCallback(() => setEditOpen(false), []);
+
+  const ownerRef = toPersonRef(project.owner);
+  const sponsorRef = toPersonRef(project.sponsor);
+
+  const travelAlerts = usePersonTravelAlerts(
+    { owner: ownerRef, sponsor: sponsorRef },
+    data.travelEntries
+  );
 
   const ms = useMemo(() => milestonesFor(data.milestones, project.id), [data.milestones, project.id]);
   const ups = useMemo(() => updatesFor(data.updates, project.id), [data.updates, project.id]);
@@ -187,9 +200,11 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
             <Badge appearance="tint" color="brand" shape="rounded">
               {project.portfolio}
             </Badge>
-            <Text size={200} className={s.code}>
-              {project.projectCode}
-            </Text>
+            {project.nOrPCode && (
+              <Text size={200} className={s.code}>
+                {project.nOrPCode}
+              </Text>
+            )}
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
@@ -203,6 +218,8 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
       </div>
 
       <ProjectEditDrawer project={project} allProjects={data.projects} open={editOpen} onClose={closeEdit} />
+
+      <TravelAlertBanner alerts={travelAlerts} projectTitle={project.title} />
 
       <div className={s.divider} />
 
@@ -227,12 +244,44 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
 
             <div className={s.facts}>
               <Fact label="Owner">
-                <Avatar name={project.owner} size={20} color="colorful" />
-                <Text size={300}>{project.owner}</Text>
+                <Avatar name={personName(project.owner)} size={20} color="colorful" />
+                {ownerRef.email ? (
+                  <a href={`mailto:${ownerRef.email}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <Text size={300}>{personName(project.owner)}</Text>
+                  </a>
+                ) : (
+                  <Text size={300}>{personName(project.owner)}</Text>
+                )}
+                {ownerRef.name && (
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<Icon name="mail" size={12} />}
+                    onClick={() => setNotifyPerson({ person: ownerRef, role: "owner" })}
+                    title="Notify owner"
+                    style={{ padding: "0 2px", minWidth: 0 }}
+                  />
+                )}
               </Fact>
               <Fact label="Sponsor">
-                <Avatar name={project.sponsor} size={20} color="colorful" />
-                <Text size={300}>{project.sponsor}</Text>
+                <Avatar name={personName(project.sponsor)} size={20} color="colorful" />
+                {sponsorRef.email ? (
+                  <a href={`mailto:${sponsorRef.email}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <Text size={300}>{personName(project.sponsor)}</Text>
+                  </a>
+                ) : (
+                  <Text size={300}>{personName(project.sponsor)}</Text>
+                )}
+                {sponsorRef.name && (
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    icon={<Icon name="mail" size={12} />}
+                    onClick={() => setNotifyPerson({ person: sponsorRef, role: "sponsor" })}
+                    title="Notify sponsor"
+                    style={{ padding: "0 2px", minWidth: 0 }}
+                  />
+                )}
               </Fact>
               <Fact label="Product area">
                 <Text size={300}>{project.productArea}</Text>
@@ -240,6 +289,22 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
               <Fact label="Funding source">
                 <Text size={300}>{project.fundingSource}</Text>
               </Fact>
+              {project.nOrPCode && (
+                <Fact label="N or P code">
+                  <Text size={300}>{project.nOrPCode}</Text>
+                </Fact>
+              )}
+              {(project.sites ?? []).length > 0 && (
+                <Fact label="Associated sites">
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                    {project.sites.map((site) => (
+                      <Badge key={site} appearance="tint" color="brand" shape="rounded" size="small">
+                        {site}
+                      </Badge>
+                    ))}
+                  </div>
+                </Fact>
+              )}
               <Fact label="Start">
                 <Text size={300}>{formatDate(project.startDate)}</Text>
               </Fact>
@@ -338,7 +403,7 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
                           {formatDate(u.date)}
                         </Text>
                         <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                          {u.submittedBy}
+                          {personName(u.submittedBy)}
                         </Text>
                       </div>
                       <Text size={300} style={{ color: tokens.colorNeutralForeground2 }} block>
@@ -392,7 +457,7 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
           {latest ? (
             <SectionCard title="Latest update" icon="updates">
               <Text size={200} style={{ color: tokens.colorNeutralForeground3 }} block>
-                {formatDate(latest.date)} · {latest.submittedBy}
+                {formatDate(latest.date)} · {personName(latest.submittedBy)}
               </Text>
               <Text size={300} style={{ color: tokens.colorNeutralForeground2, marginTop: "6px" }} block>
                 {latest.summary}
@@ -416,6 +481,57 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
             )}
           </SectionCard>
 
+          {(project.projectStages ?? []).length > 0 && (
+            <SectionCard title="Stage breakdown" icon="flag">
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                      {["Label", "Stage", "Status", "Start", "End"].map((h) => (
+                        <th
+                          key={h}
+                          style={{
+                            textAlign: "left",
+                            padding: "6px 12px",
+                            fontWeight: 600,
+                            color: tokens.colorNeutralForeground3,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {project.projectStages.map((ps) => (
+                      <tr
+                        key={ps.id}
+                        style={{ borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}
+                      >
+                        <td style={{ padding: "8px 12px" }}>
+                          <Text size={300} weight="semibold">{ps.label}</Text>
+                        </td>
+                        <td style={{ padding: "8px 12px" }}>
+                          <StageBadge stage={ps.stage} />
+                        </td>
+                        <td style={{ padding: "8px 12px" }}>
+                          <StatusBadge status={ps.status} />
+                        </td>
+                        <td style={{ padding: "8px 12px", whiteSpace: "nowrap" }}>
+                          <Text size={200}>{formatDate(ps.startDate)}</Text>
+                        </td>
+                        <td style={{ padding: "8px 12px", whiteSpace: "nowrap" }}>
+                          <Text size={200}>{formatDate(ps.endDate)}</Text>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </SectionCard>
+          )}
+
           {(resolvedUpstreams.length > 0 || hasDownstreams) && (
             <SectionCard title="Dependency graph" icon="link">
               <DependencyGraph
@@ -427,6 +543,17 @@ function DetailContent({ data, project }: { data: PortfolioData; project: Projec
           )}
         </div>
       </div>
+
+      {notifyPerson && (
+        <NotifyDialog
+          open={!!notifyPerson}
+          onClose={() => setNotifyPerson(null)}
+          recipientName={notifyPerson.person.name}
+          recipientEmail={notifyPerson.person.email}
+          defaultSubject={`Regarding: ${project.title}`}
+          defaultBody={`Hi ${notifyPerson.person.name},\n\nI wanted to reach out regarding the ${project.title} project, where you are listed as ${notifyPerson.role}.\n\nThanks`}
+        />
+      )}
     </>
   );
 }

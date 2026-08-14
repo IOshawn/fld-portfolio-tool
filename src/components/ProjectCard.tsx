@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { makeStyles, shorthands, tokens, Text, Avatar, Badge } from "@fluentui/react-components";
-import type { Project, Milestone } from "../types/models";
+import type { Project, Milestone, Portfolio } from "../types/models";
+import { PORTFOLIO_SHORT_NAMES, personName } from "../types/models";
 import { StatusBadge, StageBadge } from "./Badges";
 import { Icon } from "./Icon";
 import { formatDate } from "../lib/format";
+import { statusBarColor } from "../lib/theme";
 
 const useStyles = makeStyles({
   card: {
@@ -41,6 +43,25 @@ const useStyles = makeStyles({
   code: {
     color: tokens.colorNeutralForeground3,
     fontVariantNumeric: "tabular-nums",
+  },
+  stages: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "4px",
+    paddingTop: "4px",
+  },
+  stageChip: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+    fontSize: "11px",
+    color: tokens.colorNeutralForeground2,
+  },
+  stageDot: {
+    width: "6px",
+    height: "6px",
+    borderRadius: "50%",
+    flexShrink: 0,
   },
   chips: {
     display: "flex",
@@ -92,9 +113,11 @@ export function ProjectCard({
           <Text size={400} className={s.title} block>
             {project.title}
           </Text>
-          <Text size={200} className={s.code}>
-            {project.projectCode}
-          </Text>
+          {project.nOrPCode && (
+            <Text size={200} className={s.code}>
+              {project.nOrPCode}
+            </Text>
+          )}
         </div>
         <StatusBadge status={project.status} />
       </div>
@@ -102,14 +125,28 @@ export function ProjectCard({
       <div className={s.chips}>
         <StageBadge stage={project.stage} />
         <Badge appearance="tint" color="brand" shape="rounded">
-          {project.portfolio}
+          {PORTFOLIO_SHORT_NAMES[project.portfolio as Portfolio] ?? project.portfolio}
         </Badge>
       </div>
 
+      {(project.projectStages ?? []).length > 0 && (
+        <div className={s.stages}>
+          {project.projectStages.map((ps) => (
+            <span key={ps.id} className={s.stageChip}>
+              <span
+                className={s.stageDot}
+                style={{ backgroundColor: statusBarColor(ps.status) }}
+              />
+              {ps.label}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className={s.owner}>
-        <Avatar name={project.owner} size={24} color="colorful" />
+        <Avatar name={personName(project.owner)} size={24} color="colorful" />
         <Text size={300} className={s.ownerText}>
-          {project.owner}
+          {personName(project.owner)}
         </Text>
       </div>
 

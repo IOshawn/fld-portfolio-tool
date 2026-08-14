@@ -1,4 +1,9 @@
-# Deploy to Azure Static Web Apps (no DevOps)
+# Deploy to Azure Static Web Apps
+
+> **Current production path:** pushes to `main` run
+> `.github/workflows/azure-static-web-apps-ambitious-desert-090767500.yml`. The build uses
+> `VITE_API_MODE=functions` and connects to the separate `fld-portfolio` Function App through
+> relative `/api/*` routes. The direct SWA CLI approach below is a frontend-only fallback.
 
 Host the app as a static site on Azure Static Web Apps (SWA). This deploys the **UI with the
 built-in mock data** — a hosted, shareable, clickable prototype. (Live SharePoint data on SWA
