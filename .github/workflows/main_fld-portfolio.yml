@@ -39,18 +39,12 @@ jobs:
           npm prune --omit=dev --no-audit --fund=false
           popd
 
-      - name: Zip artifact for deployment
-        shell: bash
-        run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          zip ../release.zip ./* -r -x "local.settings.json" "dist/**/*.map"
-          popd
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,12 +55,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+          path: api
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: 'fld-portfolio'
-          package: release.zip
+          package: api
           sku: flexconsumption
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FE63C98D877048519B5D3ACCCFA2A0A0 }}
